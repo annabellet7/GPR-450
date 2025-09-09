@@ -54,6 +54,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-1: IMPLEMENT ME
 //-----------------------------------------------------------------------------
+// 
+//-----------------------------------------------------------------------------
+// 		   Olivia Notes
+//-----------------------------------------------------------------------------
+// 
 		//1. pre-resolution: apply time step: single line of code applied twice to increment "keyframe time" and "clip time" by the time step
 //	a. time step: take in only a positive time step (1/30 of dt)
 //	b. numberical integration for time itself
@@ -64,6 +69,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //			1. paused: dt = 0
 //			2. forward: dt > 0
 //				a. stop
+//				b. step(s) taken
 //				b. step(s) taken
 //				c. clip exited
 //			3. reverse: dt < 0
@@ -92,6 +98,39 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //	a. required for team of 3
 // 
 //BONUS. Parse the custom clip data file format provided to automate the preparation of clips and keyframe data
+// 
+// 
+//-----------------------------------------------------------------------------
+//			Victor Notes
+//-----------------------------------------------------------------------------
+
+		clipCtrl->clipTime_sec += dt;
+		clipCtrl->keyframeTime_sec += dt;
+		//step 1 take a step (increment time)
+
+		//step 2 check if you're on another keyframe (resolve keyframe)
+		// while realtime is greater than t1 move to the next time
+		//relative time -= duration of the keyframe  &  keyframe moves to the next one
+		//pause
+		//forward
+		//	stop
+		//	step(s) taken
+		//  clip exited
+		//reverse
+		//	stop
+		//	step(s) taken
+		//  clip exited
+
+		//step 3 evaluate where you are in your keyframe
+		//u = (t-t0)/(t1-t0)  ||  this is the value from 0-1 of how far into the clip we are
+		//u: [0, 1)
+
+		// keep stepping condition below, exit is the opposite
+		//while(t>=t1 || t<t0)
+
+		//for end condition
+		clipCtrl->clip->transitionForward->flag;
+		clipCtrl->clip->transitionReverse->flag;
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-1
