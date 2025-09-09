@@ -63,6 +63,9 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //	a. time step: take in only a positive time step (1/30 of dt)
 //	b. numberical integration for time itself
 // 
+		clipCtrl->clipTime_sec += dt;
+		clipCtrl->keyframeTime_sec += dt;
+// 
 //2. resolve time: while unresolved, continue playback behavior to determine new "keyframe time" and "clip time"
 //	a. 7 cases to check for resolution total
 //		i. resolve keyframe
@@ -89,6 +92,24 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //				b. i = ??? (i = 3 or 4, problems either way)
 //				c. direction = 0
 //			7. it says 7 but I only counted 6 :(
+
+		while (/*time is unresolved*/clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < 0)
+		{
+			if (dt == 0)
+			{
+				//paused
+			}
+			else if (dt > 0)
+			{
+
+			}
+			else
+			{
+
+			}
+
+			break;
+		}
 // 
 //3. post-resolution: normalize time/parameters: one time, single line of code applied twice to calculate normalized "keyframe time" and "clip time"
 //	a. normalize keyframe/clip time: relative time / duration
@@ -104,9 +125,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //			Victor Notes
 //-----------------------------------------------------------------------------
 
-		clipCtrl->clipTime_sec += dt;
-		clipCtrl->keyframeTime_sec += dt;
-		//step 1 take a step (increment time)
 
 		//step 2 check if you're on another keyframe (resolve keyframe)
 		// while realtime is greater than t1 move to the next time
