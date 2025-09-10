@@ -93,6 +93,24 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //				c. direction = 0
 //			7. it says 7 but I only counted 6 :(
 
+		//if keyframe timme exits keyframe bounds
+		/*while(clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+		{
+			same thing as exiting clip bounds but with keyframe
+			if (dt >= 0)
+			{
+				clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
+				clipCtrl->clipIndex++;
+			}
+			else
+			{
+				clipCtrl->clipIndex--;
+				clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
+			}
+		 
+		}*/
+		
+		//if clip time exits clip bounds
 		while (/*time is unresolved*/clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < 0)
 		{
 			if (dt == 0)
@@ -101,11 +119,27 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			}
 			else if (dt > 0)
 			{
-
+				//time is greater than or equal to the clip duration
+				
+				//looping
+				// calculate overstep (how far into the clip/keyframe time should be after loop)
+				//		?: offset = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec
+				//set keyframe index to 0
+				//add offset
+				//check if in correct keyframe
+				//direction = direction
 			}
 			else
 			{
+				//time is less than 0 in respect to the clip
 
+				//looping
+				//pretty much same as above
+				// ?: offset = clipCtrl->clipTimme_sec
+				//set keyframe index to clipCtrl->clip->keyframeCount(- 1?)
+				//add offset (offset should be negative)
+				//check correct keyframe
+				//direction = direction
 			}
 
 			break;
