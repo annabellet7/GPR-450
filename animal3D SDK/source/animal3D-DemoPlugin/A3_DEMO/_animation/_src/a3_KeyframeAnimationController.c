@@ -127,7 +127,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to 0
 				//add offset
 				//check if in correct keyframe
-				//direction = direction
 			}
 			else
 			{
@@ -139,7 +138,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to clipCtrl->clip->keyframeCount(- 1?)
 				//add offset (offset should be negative)
 				//check correct keyframe
-				//direction = direction
 			}
 
 			break;
