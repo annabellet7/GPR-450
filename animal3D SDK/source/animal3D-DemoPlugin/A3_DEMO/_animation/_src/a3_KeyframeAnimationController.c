@@ -46,6 +46,8 @@ a3i32 a3clipControllerInit(a3_ClipController* clipCtrl_out, const a3byte ctrlNam
 	return -1;
 }
 
+
+
 // update clip controller
 a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 {
@@ -92,32 +94,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //				b. i = ??? (i = 3 or 4, problems either way)
 //				c. direction = 0
 //			7. it says 7 but I only counted 6 :(
-
-		//if keyframe timme exits keyframe bounds
-		/*while(clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
-		{
-			same thing as exiting clip bounds but with keyframe
-			if (dt >= 0)
-			{
-				clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
-				clipCtrl->clipIndex++;
-			}
-			else
-			{
-				clipCtrl->clipIndex--;
-				clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
-			}
-		 
-		}*/
 		
 		//if clip time exits clip bounds
 		while (/*time is unresolved*/clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < 0)
 		{
-			if (dt == 0)
-			{
-				//paused
-			}
-			else if (dt > 0)
+			if (dt > 0)
 			{
 				//time is greater than or equal to the clip duration
 				
@@ -127,8 +108,18 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to 0
 				//add offset
 				//check if in correct keyframe
+
+				a3f64 overstep = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec;
+				clipCtrl->keyframeIndex = 0;
+				clipCtrl->keyframeTime_sec = overstep;
+				clipCtrl->clipTime_sec = overstep;
+				while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+				{
+					clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
+					clipCtrl->keyframeIndex++;
+				}
 			}
-			else
+			else if (dt < 0)
 			{
 				//time is less than 0 in respect to the clip
 
@@ -138,15 +129,42 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to clipCtrl->clip->keyframeCount(- 1?)
 				//add offset (offset should be negative)
 				//check correct keyframe
+				a3f64 overstep = clipCtrl->clipTime_sec;
+				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
+				clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec + overstep;
+				clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec + overstep;
+				while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+				{
+					clipCtrl->keyframeIndex--;
+					clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
+				}
+			}// if we need else is dt == 0
+		}
+		
+		//if keyframe timme exits keyframe bounds
+		while(clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+		{
+			//same thing as exiting clip bounds but with keyframe
+			if (dt >= 0)
+			{
+				clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
+				clipCtrl->keyframeIndex++;
+				//clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount == clipCtrl->keyframeIndex ? 0 : clipCtrl->keyframeIndex;
 			}
-
-			break;
+			else
+			{
+				clipCtrl->keyframeIndex--;
+				clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
+			}
 		}
 // 
 //3. post-resolution: normalize time/parameters: one time, single line of code applied twice to calculate normalized "keyframe time" and "clip time"
 //	a. normalize keyframe/clip time: relative time / duration
 //	b. 0-1 (not clamped)
 // 
+		clipCtrl->clipParam = clipCtrl->clipTime_sec / clipCtrl->clip->duration_sec;
+		//clipCtrl->clipParam = inverselerp(0, clipCtrl->clip->duration_sec, clipCtrl->clipTime_sec);
+		clipCtrl->keyframeParam = clipCtrl->keyframeTime_sec / clipCtrl->keyframe->duration_sec;
 //4. add a new instance of the clip controller, new data, and link them to something in the scene to produce a new animation effect
 //	a. required for team of 3
 // 
@@ -177,10 +195,6 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 		// keep stepping condition below, exit is the opposite
 		//while(t>=t1 || t<t0)
-
-		//for end condition
-		clipCtrl->clip->transitionForward->flag;
-		clipCtrl->clip->transitionReverse->flag;
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-1

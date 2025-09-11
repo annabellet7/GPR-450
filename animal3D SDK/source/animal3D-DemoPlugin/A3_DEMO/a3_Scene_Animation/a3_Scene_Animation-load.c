@@ -201,7 +201,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 
 	// initialize additional clips and controllers
 	{
-		a3ui32 const rate_additional = 30;
+		a3ui32 const rate_additional = 10;
 		a3f64 const fps_additional = (a3f64)rate_additional;
 		a3ui32 const additionalSampleStart = hierarchySampleCount;
 		a3ui32 const additionalKeyframeStart = hierarchyKeyframeCount;
