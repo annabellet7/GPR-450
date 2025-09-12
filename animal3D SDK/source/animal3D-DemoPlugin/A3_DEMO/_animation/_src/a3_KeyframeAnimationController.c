@@ -65,8 +65,10 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //	a. time step: take in only a positive time step (1/30 of dt)
 //	b. numberical integration for time itself
 // 
+		dt = -dt;
 		clipCtrl->clipTime_sec += dt;
 		clipCtrl->keyframeTime_sec += dt;
+
 // 
 //2. resolve time: while unresolved, continue playback behavior to determine new "keyframe time" and "clip time"
 //	a. 7 cases to check for resolution total
@@ -156,6 +158,10 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			}
 			else
 			{
+				if (clipCtrl->keyframeIndex == 0)
+				{
+					break;
+				}
 				clipCtrl->keyframeIndex--;
 				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
