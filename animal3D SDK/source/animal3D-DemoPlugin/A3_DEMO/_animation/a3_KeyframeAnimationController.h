@@ -39,7 +39,11 @@ extern "C"
 
 
 //-----------------------------------------------------------------------------
-
+typedef enum {
+	FORWARD,
+	BACKWARD,
+	STOP,
+} vd_state;
 // clip controller
 // metaphor: playhead
 typedef struct a3_ClipController
@@ -62,6 +66,8 @@ typedef struct a3_ClipController
 	a3_ClipPool const* clipPool;
 	a3_Clip const* clip;
 	a3_Keyframe const* keyframe;
+
+	vd_state state;
 } a3_ClipController;
 
 

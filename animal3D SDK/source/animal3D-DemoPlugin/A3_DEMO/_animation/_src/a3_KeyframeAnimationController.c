@@ -65,8 +65,23 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //	a. time step: take in only a positive time step (1/30 of dt)
 //	b. numberical integration for time itself
 // 
-		clipCtrl->clipTime_sec += dt;
-		clipCtrl->keyframeTime_sec += dt;
+		a3f64 timeStep;
+		switch (clipCtrl->state)
+		{
+		case(FORWARD):
+			timeStep = dt;
+			break;
+		case(BACKWARD):
+			timeStep = -dt;
+			break;
+		case(STOP):
+			timeStep = 0;
+			break;
+		default:
+			timeStep = 0;
+		}
+		clipCtrl->clipTime_sec += timeStep;
+		clipCtrl->keyframeTime_sec += timeStep;
 // 
 //2. resolve time: while unresolved, continue playback behavior to determine new "keyframe time" and "clip time"
 //	a. 7 cases to check for resolution total
@@ -96,9 +111,9 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //			7. it says 7 but I only counted 6 :(
 		
 		//if clip time exits clip bounds
-		while (/*time is unresolved*/clipCtrl->clipTime_sec >= clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < 0)
+		while (/*time is unresolved*/clipCtrl->clipTime_sec > clipCtrl->clip->duration_sec || clipCtrl->clipTime_sec < 0)
 		{
-			if (dt > 0)
+			if (timeStep > 0)
 			{
 				//time is greater than or equal to the clip duration
 				
@@ -108,19 +123,35 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to 0
 				//add offset
 				//check if in correct keyframe
-
-				a3f64 overstep = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec;
-				clipCtrl->keyframeIndex = 0;
-				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
-				clipCtrl->keyframeTime_sec = overstep;
-				clipCtrl->clipTime_sec = overstep;
-				/*while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+				if (clipCtrl->clip->transitionForward->flag == a3clip_playFlag)
 				{
-					clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
-					clipCtrl->keyframeIndex++;
-				}*/
+					a3f64 overstep = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec;
+					clipCtrl->keyframeIndex = 0;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = overstep;
+					clipCtrl->clipTime_sec = overstep;
+				}
+				else if (clipCtrl->clip->transitionForward->flag == a3clip_reverseFlag)
+				{
+					a3f64 overstep = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec;
+					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec - overstep;
+					clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec - overstep;
+
+					clipCtrl->state = dt > 0 ? BACKWARD : FORWARD;
+				}
+				else if (clipCtrl->clip->transitionForward->flag == a3clip_stopFlag)
+				{
+					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec;
+					clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec;
+
+					clipCtrl->state = STOP;
+				}
 			}
-			else if (dt < 0)
+			else if (timeStep < 0)
 			{
 				//time is less than 0 in respect to the clip
 
@@ -130,11 +161,33 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//set keyframe index to clipCtrl->clip->keyframeCount(- 1?)
 				//add offset (offset should be negative)
 				//check correct keyframe
-				a3f64 overstep = clipCtrl->clipTime_sec;
-				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
-				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
-				clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec + overstep;
-				clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec + overstep;
+				if (clipCtrl->clip->transitionReverse->flag == a3clip_playFlag)
+				{
+					a3f64 overstep = clipCtrl->clipTime_sec;
+					clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec + overstep;
+					clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec + overstep;
+				}
+				else if (clipCtrl->clip->transitionReverse->flag == a3clip_reverseFlag)
+				{
+					a3f64 overstep = clipCtrl->clipTime_sec;
+					clipCtrl->keyframeIndex = 0;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = -overstep;
+					clipCtrl->clipTime_sec = -overstep;
+
+					clipCtrl->state = dt < 0 ? BACKWARD : FORWARD;
+				}
+				else if (clipCtrl->clip->transitionReverse->flag == a3clip_stopFlag)
+				{
+					clipCtrl->keyframeIndex = 0;
+					clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+					clipCtrl->keyframeTime_sec = 0;
+					clipCtrl->clipTime_sec = 0;
+
+					clipCtrl->state = STOP;
+				}
 				/*while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
 				{
 					clipCtrl->keyframeIndex--;
@@ -147,8 +200,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 		while(clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
 		{
 			//same thing as exiting clip bounds but with keyframe
-			if (dt >= 0)
+			if (timeStep >= 0)
 			{
+				if (clipCtrl->keyframeIndex == clipCtrl->clip->keyframeCount - 1)
+					break;
+
 				clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
 				clipCtrl->keyframeIndex++;
 				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
