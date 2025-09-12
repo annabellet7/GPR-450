@@ -113,11 +113,11 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				clipCtrl->keyframeIndex = 0;
 				clipCtrl->keyframeTime_sec = overstep;
 				clipCtrl->clipTime_sec = overstep;
-				while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+				/*while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
 				{
 					clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
 					clipCtrl->keyframeIndex++;
-				}
+				}*/
 			}
 			else if (dt < 0)
 			{
@@ -162,6 +162,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //	a. normalize keyframe/clip time: relative time / duration
 //	b. 0-1 (not clamped)
 // 
+		clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 		clipCtrl->clipParam = clipCtrl->clipTime_sec / clipCtrl->clip->duration_sec;
 		//clipCtrl->clipParam = inverselerp(0, clipCtrl->clip->duration_sec, clipCtrl->clipTime_sec);
 		clipCtrl->keyframeParam = clipCtrl->keyframeTime_sec / clipCtrl->keyframe->duration_sec;
