@@ -111,6 +111,7 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 
 				a3f64 overstep = clipCtrl->clipTime_sec - clipCtrl->clip->duration_sec;
 				clipCtrl->keyframeIndex = 0;
+				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				clipCtrl->keyframeTime_sec = overstep;
 				clipCtrl->clipTime_sec = overstep;
 				/*while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
@@ -131,13 +132,14 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 				//check correct keyframe
 				a3f64 overstep = clipCtrl->clipTime_sec;
 				clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount - 1;
+				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				clipCtrl->keyframeTime_sec = clipCtrl->keyframe->duration_sec + overstep;
 				clipCtrl->clipTime_sec = clipCtrl->clip->duration_sec + overstep;
-				while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
+				/*while (clipCtrl->keyframeTime_sec >= clipCtrl->keyframe->duration_sec || clipCtrl->keyframeTime_sec < 0)
 				{
 					clipCtrl->keyframeIndex--;
 					clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
-				}
+				}*/
 			}// if we need else is dt == 0
 		}
 		
@@ -149,11 +151,13 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 			{
 				clipCtrl->keyframeTime_sec -= clipCtrl->keyframe->duration_sec;
 				clipCtrl->keyframeIndex++;
+				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				//clipCtrl->keyframeIndex = clipCtrl->clip->keyframeCount == clipCtrl->keyframeIndex ? 0 : clipCtrl->keyframeIndex;
 			}
 			else
 			{
 				clipCtrl->keyframeIndex--;
+				clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
 				clipCtrl->keyframeTime_sec += clipCtrl->keyframe->duration_sec;
 			}
 		}
@@ -161,10 +165,8 @@ a3i32 a3clipControllerUpdate(a3_ClipController* clipCtrl, a3f64 dt)
 //3. post-resolution: normalize time/parameters: one time, single line of code applied twice to calculate normalized "keyframe time" and "clip time"
 //	a. normalize keyframe/clip time: relative time / duration
 //	b. 0-1 (not clamped)
-// 
-		clipCtrl->keyframe = &clipCtrl->clipPool->keyframe[clipCtrl->keyframeIndex];
+
 		clipCtrl->clipParam = clipCtrl->clipTime_sec / clipCtrl->clip->duration_sec;
-		//clipCtrl->clipParam = inverselerp(0, clipCtrl->clip->duration_sec, clipCtrl->clipTime_sec);
 		clipCtrl->keyframeParam = clipCtrl->keyframeTime_sec / clipCtrl->keyframe->duration_sec;
 //4. add a new instance of the clip controller, new data, and link them to something in the scene to produce a new animation effect
 //	a. required for team of 3
