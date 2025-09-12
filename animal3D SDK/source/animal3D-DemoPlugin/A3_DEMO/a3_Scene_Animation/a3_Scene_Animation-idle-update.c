@@ -81,16 +81,24 @@ void a3animation_update_animation_other(
 	a3_Scene_Animation* scene, a3f64 const dt)
 {
 	a3ui32 sampleIndex0;
+	a3ui32 sampleIndex1;
 	a3f64 keyframeParam;
 	a3f64 clipParam;
+	a3f64 keyframeParam1;
+	a3f64 clipParam1;
 
 	a3clipControllerUpdate(scene->clipCtrl_morph, dt);
+	a3clipControllerUpdate(scene->clipCtrl_morph1, dt);
 	sampleIndex0 = scene->clipPool->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex0;
+	sampleIndex1 = scene->clipPool1->keyframe[scene->clipCtrl_morph1->keyframeIndex].sampleIndex0;
 	keyframeParam = scene->clipCtrl_morph->keyframeParam;
-	clipParam = scene->clipCtrl_morph->clipParam;
+	keyframeParam1 = scene->clipCtrl_morph1->keyframeParam;
+	clipParam = scene->clipCtrl_morph1->clipParam;
+	clipParam1 = scene->clipCtrl_morph1->clipParam;
 
 	scene->morph_time = (a3f64)sampleIndex0 + keyframeParam;
 	scene->obj_teapot->euler.z = a3trigValid_sind((a3real)keyframeParam * a3real_threesixty);
+	scene->obj_teapot1->euler.z = a3trigValid_sind((a3real)keyframeParam1 * a3real_threesixty);
 }
 
 void a3animation_update_animation(

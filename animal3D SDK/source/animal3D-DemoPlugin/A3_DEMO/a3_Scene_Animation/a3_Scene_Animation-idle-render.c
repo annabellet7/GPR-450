@@ -236,6 +236,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 		demoState->draw_node,
 		demoState->draw_unit_box,		// skybox
 		demoState->draw_node,			// teapot
+		demoState->draw_node,			// teapot1
 
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PREP-2: ADD SHORTCUTS
@@ -263,6 +264,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 		0,
 		0,
 		0,
+		demoState->tex_checker,			// skybox
 		demoState->tex_checker,			// skybox
 		demoState->tex_checker,			// teapot
 		
@@ -425,8 +427,10 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 	a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uAtlas, 1, a3mat4_identity.mm);
 	a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, hueCount, rgba4->v);
 	if (demoState->updateAnimation)
+	{
 		a3shaderUniformSendDouble(a3unif_single, currentDemoProgram->uTime, 1, &scene->morph_time);
-
+		a3shaderUniformSendDouble(a3unif_single, currentDemoProgram->uTime, 1, &scene->morph_time1);
+	}
 	// select pipeline algorithm
 	glDisable(GL_BLEND);
 	switch (pipeline)
@@ -481,6 +485,45 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 				a3ui32 const sampleIndex0 = scene->clipPool->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex0;
 				a3ui32 const sampleIndex1 = scene->clipPool->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex1;
 				a3f64 const keyframeParam = scene->clipCtrl_morph->keyframeParam;
+				a3real4Lerp(col_teapot, rgba4[(sampleIndex0 * 4) % hueCount].v, rgba4[(sampleIndex1 * 4) % hueCount].v, (a3real)keyframeParam);
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, col_teapot);
+			}
+			else
+			{
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, grey);
+			}
+			a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &j);
+			a3vertexDrawableActivateAndRender(currentDrawable);
+		}
+
+		// draw morphing object
+		currentDemoProgram = demoState->prog_drawPhong_morph5;
+		a3shaderProgramActivate(currentDemoProgram->program);
+		a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uP, 1, activeCamera->projectionMat.mm);
+		a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uAtlas, 1, a3mat4_identity.mm);
+		if (demoState->updateAnimation)
+			a3shaderUniformSendDouble(a3unif_single, currentDemoProgram->uTime, 1, &scene->morph_time1);
+		currentSceneObject = scene->obj_teapot1;
+		j = (a3ui32)(currentSceneObject - scene->object_scene);
+		{
+			a3boolean const teapot_animate_color = true;
+
+			// send data and draw
+			i = (j * 2 + 11) % hueCount;
+			currentDrawable = demoState->draw_teapot_morph;
+			a3textureActivate(texture_dm[j], a3tex_unit00);
+			a3textureActivate(texture_dm[j], a3tex_unit01);
+			a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+			a3scene_quickInvertTranspose_internal(modelViewMat.m);
+			modelViewMat.v3 = a3vec4_zero;
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+			if (teapot_animate_color)
+			{
+				a3real4 col_teapot;
+				a3ui32 const sampleIndex0 = scene->clipPool1->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex0;
+				a3ui32 const sampleIndex1 = scene->clipPool1->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex1;
+				a3f64 const keyframeParam = scene->clipCtrl_morph1->keyframeParam;
 				a3real4Lerp(col_teapot, rgba4[(sampleIndex0 * 4) % hueCount].v, rgba4[(sampleIndex1 * 4) % hueCount].v, (a3real)keyframeParam);
 				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, col_teapot);
 			}
@@ -690,6 +733,31 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
 					a3vertexDrawableActivateAndRender(currentDrawable);
 				}
+
+				// morphing bases
+				currentDemoProgram = demoState->prog_drawTangentBasis_morph5;
+				a3shaderProgramActivate(currentDemoProgram->program);
+				a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uP, 1, activeCamera->projectionMat.mm);
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor0, hueCount, rgba4->v);
+				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, a3vec4_one.v);
+				a3shaderUniformSendFloat(a3unif_single, currentDemoProgram->uSize, 1, size);
+				a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uFlag, 1, flag);
+				if (demoState->updateAnimation)
+					a3shaderUniformSendDouble(a3unif_single, currentDemoProgram->uTime, 1, &scene->morph_time);
+				currentSceneObject = scene->obj_teapot1;
+				j = (a3ui32)(currentSceneObject - scene->object_scene);
+				{
+					i = (j * 2 + 23) % hueCount;
+					currentDrawable = demoState->draw_teapot_morph;
+					a3real4x4Product(modelViewMat.m, activeCameraObject->modelMatInv.m, currentSceneObject->modelMat.m);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV, 1, modelViewMat.mm);
+					a3scene_quickInvertTranspose_internal(modelViewMat.m);
+					modelViewMat.v3 = a3vec4_zero;
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+					a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uAtlas, 1, a3mat4_identity.mm);
+					a3shaderUniformSendInt(a3unif_single, currentDemoProgram->uIndex, 1, &i);
+					a3vertexDrawableActivateAndRender(currentDrawable);
+				}
 			}
 
 			// display color target with scene overlays
@@ -758,7 +826,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 		// individual objects (based on scene graph)
 		if (demoState->displayObjectAxes)
 		{
-			for (currentSceneObject = scene->obj_teapot, endSceneObject = scene->obj_teapot;
+			for (currentSceneObject = scene->obj_teapot, endSceneObject = scene->obj_teapot1;
 				currentSceneObject <= endSceneObject;
 				++currentSceneObject)
 			{
