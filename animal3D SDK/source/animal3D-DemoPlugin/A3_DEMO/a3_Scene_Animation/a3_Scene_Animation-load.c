@@ -249,10 +249,10 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 		a3ui32 const additionalKeyframeStart = hierarchyKeyframeCount;
 		a3ui32 const additionalClipStart = hierarchyClipCount;
 		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 0], 0, fps_additional);//0.0s
-		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 1], 15, fps_additional);//0.5s
-		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 2], 75, fps_additional);//2.5s
-		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 3], 105, fps_additional);//3.5s
-		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 4], 120, fps_additional);//4.0s
+		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 1], 10, fps_additional);//0.5s
+		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 2], 70, fps_additional);//2.5s
+		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 3], 85, fps_additional);//3.5s
+		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 4], 115, fps_additional);//4.0s
 		a3sampleInit(&scene->clipPool1->sample[additionalSampleStart + 5], 150, fps_additional);//5.0s
 		for (j = 0; j < additionalKeyframeCount1; ++j)
 			a3keyframeInit(&scene->clipPool1->keyframe[additionalKeyframeStart + j],
@@ -305,6 +305,7 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 	scene->obj_teapot->scaleMode = 1;
 
 	// teapot1
+	scene->obj_teapot1->position.z = 7;
 	scene->obj_teapot1->position.y = -a3real_six;
 	scene->obj_teapot1->scale.x = a3real_half;
 	scene->obj_teapot1->scaleMode = 1;

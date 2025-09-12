@@ -98,7 +98,7 @@ void a3animation_update_animation_other(
 
 	scene->morph_time = (a3f64)sampleIndex0 + keyframeParam;
 	scene->obj_teapot->euler.z = a3trigValid_sind((a3real)keyframeParam * a3real_threesixty);
-	scene->obj_teapot1->euler.z = a3trigValid_sind((a3real)keyframeParam1 * a3real_threesixty);
+	scene->obj_teapot1->euler.y = -a3trigValid_sind((a3real)keyframeParam1 * a3real_threesixty);
 }
 
 void a3animation_update_animation(

@@ -524,7 +524,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 				a3ui32 const sampleIndex0 = scene->clipPool1->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex0;
 				a3ui32 const sampleIndex1 = scene->clipPool1->keyframe[scene->clipCtrl_morph->keyframeIndex].sampleIndex1;
 				a3f64 const keyframeParam = scene->clipCtrl_morph1->keyframeParam;
-				a3real4Lerp(col_teapot, rgba4[(sampleIndex0 * 4) % hueCount].v, rgba4[(sampleIndex1 * 4) % hueCount].v, (a3real)keyframeParam);
+				a3real4Lerp(col_teapot, rgba4[(sampleIndex0 * 8) % hueCount].v, rgba4[(sampleIndex1 * 8) % hueCount].v, (a3real)keyframeParam);
 				a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, col_teapot);
 			}
 			else
