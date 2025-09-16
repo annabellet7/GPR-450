@@ -76,9 +76,6 @@
     <Filter Include="Header Files\A3_DEMO\_a3_scene_utilities\_inl">
       <UniqueIdentifier>{ea7f0414-e156-4804-b007-33b6502b72aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\common\A3_DEMO\_a3_scene_utilities">
-      <UniqueIdentifier>{34c0ecdc-5fec-4c79-9e23-f566a3250126}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\A3_DEMO\_animation">
       <UniqueIdentifier>{d14365ff-a3a9-4811-843d-8cb6cd6c908b}</UniqueIdentifier>
     </Filter>
@@ -90,6 +87,9 @@
     </Filter>
     <Filter Include="Source Files\common\A3_DEMO\a3_Scene_Animation">
       <UniqueIdentifier>{213f9122-049c-4b4a-9421-303cce36c174}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\A3_DEMO\_animation\_a3_scene_utilities">
+      <UniqueIdentifier>{34c0ecdc-5fec-4c79-9e23-f566a3250126}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -130,10 +130,10 @@
       <Filter>Source Files\common\A3_DEMO\a3_Scene_Starter</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\_a3_scene_utilities\_src\a3_SceneObject.c">
-      <Filter>Source Files\common\A3_DEMO\_a3_scene_utilities</Filter>
+      <Filter>Source Files\common\A3_DEMO\_animation\_a3_scene_utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\_a3_scene_utilities\_src\a3_SceneRenderUtils.c">
-      <Filter>Source Files\common\A3_DEMO\_a3_scene_utilities</Filter>
+      <Filter>Source Files\common\A3_DEMO\_animation\_a3_scene_utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\_animation\_src\a3_Hierarchy.c">
       <Filter>Source Files\common\A3_DEMO\_animation</Filter>
