@@ -33,8 +33,11 @@ static inline void a3kinematicsSolveForwardSingle(const a3_HierarchyState* hiera
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
-
+	
+	//author: class demo code
+	a3real4x4Product(hierarchyState->objectSpace->hpose_base[index].transformMat.m,
+		hierarchyState->objectSpace->hpose_base[parentIndex].transformMat.m,
+		hierarchyState->localSpace->hpose_base[index].transformMat.m);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -45,8 +48,9 @@ static inline void a3kinematicsSolveForwardRoot(const a3_HierarchyState* hierarc
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
-
+	
+	//author: class demo code
+	hierarchyState->objectSpace->hpose_base[index].transformMat = hierarchyState->localSpace->hpose_base[index].transformMat;
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -68,8 +72,23 @@ a3i32 a3kinematicsSolveForwardPartial(const a3_HierarchyState* hierarchyState, c
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
-
+		
+		//author: class demo code
+		a3ui32 i;
+		for (i = firstIndex; i < nodeCount; i++)
+		{
+			if (hierarchyState->hierarchy->nodes[i].parentIndex < 0)
+			{
+				//if node is root
+				a3kinematicsSolveForwardRoot(hierarchyState, hierarchyState->hierarchy->nodes[i].index);
+			}
+			else
+			{
+				//if node is not root
+				a3kinematicsSolveForwardSingle(hierarchyState, hierarchyState->hierarchy->nodes[i].index, 
+					hierarchyState->hierarchy->nodes[i].parentIndex);
+			}
+		}
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -149,7 +168,22 @@ void a3kinematicsUpdateHierarchyStateFK(a3_HierarchyState* activeHS,
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+		//author: class demo code
+		a3hierarchyPoseConcat(
+			activeHS->localSpace->hpose_base, //GOAL: local pose = total of base and delta
+			activeHS->animPose->hpose_base, //delta pose (from clip controller interpolation)
+			baseHS->localSpace->hpose_base,
+			activeHS->hierarchy->numNodes
+			);
 
+		a3hierarchyposeConvert(
+			activeHS->localSpace, //GOAL: convert local pose description to matrix
+			activeHS->hierarchy->numNodes,
+			poseGroup->channel,
+			poseGroup->order
+		);
+
+		a3kinematicsSolveForward(activeHS); //do FK algorithm
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
