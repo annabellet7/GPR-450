@@ -290,9 +290,22 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-		
+		FILE *file = fopen(resourceFilePath, "r");
 
+		//https://www.w3schools.com/c/c_ref_stdio.php stdio file reading
+		//https://www.w3schools.com/c/c_ref_string.php string.h c strings
 
+		{
+			//order of the sections is enforced [Header], then [SegmentNames&Hierarchy], then [BasePosition], then [Frames]
+			//note: I'm pretty sure in the header of HTR files the order of fields isn't enforced
+			char charBuffer[256];
+			if (fgets(charBuffer, sizeof(charBuffer), file)) {
+				//note: std::string doesnt work because this is a C file
+				
+			}
+		}
+
+		fclose(file);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
 //-----------------------------------------------------------------------------
