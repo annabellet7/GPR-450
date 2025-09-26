@@ -226,7 +226,27 @@ void a3kinematicsUpdateHierarchyStateSkin(a3_HierarchyState* activeHS,
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+		// skinning matrix
+			// undo original matrix/pose (bind pose)
+			// turn into new matrix/pose (result of FK)
+			// send to vertex shader
+			// blend doesn't exist for matrices, but does for quaternions
 
+		//	passTangentBasis_skin_transform_vs4x.glsl
+
+		// rigid bind
+			// 1 bone influence per vertex (mechanical; robotic)
+
+		// smooth bind
+			// 2+ bone influence per vertex (organic)
+			// weighted average of matrices
+			//	sigma(W_iS_jit)v
+			// sumation of a weight(scalar) * skinning influence at time T
+
+		//author: class demo code
+		a3hierarchyStateUpdateLocalInverse(activeHS);
+		a3hierarchyStateUpdateObjectInverse(activeHS);
+		a3hierarchyStateUpdateObjectBindToCurrent(activeHS, baseHS);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
