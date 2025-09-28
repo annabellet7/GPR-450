@@ -42,7 +42,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		//		-> v' = t + R * S * v
 
 		//temp solution for testing
-		a3real4x4setRotateZYX(spatialPose->transformMat.m,
+		a3real4x4SetRotateZYX(spatialPose->transformMat.m,
 			a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
 
 		//not temp
@@ -50,6 +50,18 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 
 		//**DO THIS EVERYWHERE IN THIS FILE:
 		//		-> make sure rotation angles are within [-360, +360]
+
+		// while(rotation > 360 || rotation < -360)
+		// {
+		// if(rotation >360)
+		// {
+		// rotation -= 360;
+		// }
+		// if(rotation < -360)
+		// {
+		// rotation += 360;
+		// }
+		// }
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2

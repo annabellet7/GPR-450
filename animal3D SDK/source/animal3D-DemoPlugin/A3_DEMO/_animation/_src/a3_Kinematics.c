@@ -170,13 +170,13 @@ void a3kinematicsUpdateHierarchyStateFK(a3_HierarchyState* activeHS,
 
 		//author: class demo code
 		a3hierarchyPoseConcat(
-			activeHS->localSpace->hpose_base, //GOAL: local pose = total of base and delta
-			activeHS->animPose->hpose_base, //delta pose (from clip controller interpolation)
-			baseHS->localSpace->hpose_base,
+			activeHS->localSpace, //GOAL: local pose = total of base and delta
+			activeHS->animPose, //delta pose (from clip controller interpolation)
+			baseHS->localSpace,
 			activeHS->hierarchy->numNodes
 			);
 
-		a3hierarchyposeConvert(
+		a3hierarchyPoseConvert(
 			activeHS->localSpace, //GOAL: convert local pose description to matrix
 			activeHS->hierarchy->numNodes,
 			poseGroup->channel,
