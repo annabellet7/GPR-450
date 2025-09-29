@@ -41,41 +41,64 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		// -> concat (matrix mul) them in the correct order
 		//		-> v' = t + R * S * v
 
-
-		a3real4x4SetScale(spatialPose->transformMat.m,spatialPose->scale.x);
+		if (channel && a3poseChannel_scale_x)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.x);
+		if (channel && a3poseChannel_scale_y)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.y);
+		if (channel && a3poseChannel_scale_z)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.z);
 
 		switch (order)
 		{
 		case 0:
-			a3real4x4SetRotateXYZ(spatialPose->transformMat.m,
-				a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			break;
 		case 1:
-			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
-			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
-			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			break;
 		case 2:
-			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
-			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
-			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
 			break;
 		case 3:
-			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
-			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
-			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			break;
 		case 4:
-			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
-			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
-			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			break;
 		case 5:
-			a3real4x4SetRotateZYX(spatialPose->transformMat.m,
-				a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
 			break;
 		}
-		
 
 		a3real4Add(spatialPose->transformMat.m[3], spatialPose->translate.v);
 
