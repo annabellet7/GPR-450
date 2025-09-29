@@ -41,27 +41,43 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		// -> concat (matrix mul) them in the correct order
 		//		-> v' = t + R * S * v
 
-		//temp solution for testing
-		a3real4x4SetRotateZYX(spatialPose->transformMat.m,
-			a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
 
-		//not temp
+		a3real4x4SetScale(spatialPose->transformMat.m,spatialPose->scale.x);
+
+		switch (order)
+		{
+		case 0:
+			a3real4x4SetRotateXYZ(spatialPose->transformMat.m,
+				a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
+			break;
+		case 1:
+			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			break;
+		case 2:
+			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			break;
+		case 3:
+			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			break;
+		case 4:
+			a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			break;
+		case 5:
+			a3real4x4SetRotateZYX(spatialPose->transformMat.m,
+				a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
+			break;
+		}
+		
+
 		a3real4Add(spatialPose->transformMat.m[3], spatialPose->translate.v);
-
-		//**DO THIS EVERYWHERE IN THIS FILE:
-		//		-> make sure rotation angles are within [-360, +360]
-
-		// while(rotation > 360 || rotation < -360)
-		// {
-		// if(rotation >360)
-		// {
-		// rotation -= 360;
-		// }
-		// if(rotation < -360)
-		// {
-		// rotation += 360;
-		// }
-		// }
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
