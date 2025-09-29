@@ -327,6 +327,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 
 			//i think this is right but not sure about bitwise operations here also scale could be just x since we only get one scale value in this file, 
 			//	but i put it as 3 since it would theoretically effect x, y, and z directions
+			poseGroup_out->channel = malloc(sizeof(a3_SpatialPoseChannel) * 4);
 			*poseGroup_out->channel = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz | a3poseChannel_user_xyz;
 
 			while (!feof(file))
@@ -445,7 +446,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 							strcpy(hierarchy_out->nodes[i].name, extraBuffer);
 							hierarchy_out->nodes[i].parentIndex = -1;
 
-							strcpy(extraBuffer, "");
+							(extraBuffer, "");
 							strncpy(extraBuffer, charBuffer + strcspn(charBuffer, "\t") + 1, strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1));
 							extraBuffer[strlen(charBuffer) - strcspn(charBuffer, "\t") - 2] = '\0';
 
