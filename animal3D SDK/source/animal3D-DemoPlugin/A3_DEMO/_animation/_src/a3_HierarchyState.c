@@ -311,16 +311,198 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 
 		//https://www.w3schools.com/c/c_ref_stdio.php stdio file reading
 		//https://www.w3schools.com/c/c_ref_string.php string.h c strings
+		//https://research.cs.wisc.edu/graphics/Courses/cs-838-1999/Jeff/HTR.html 
 
 		{
 			//order of the sections is enforced [Header], then [SegmentNames&Hierarchy], then [BasePosition], then [Frames]
 			//note: I'm pretty sure in the header of HTR files the order of fields isn't enforced
+
+			size_t part = 0;
+			float secondsPerSample;
+			float frameRate;
+			float globalScale = 100;//100 is for intended units (cm)
+
 			char charBuffer[256];
-			if (fgets(charBuffer, sizeof(charBuffer), file)) {
-				//note: std::string doesnt work because this is a C file
-				
+			char extraBuffer[256];
+
+			//i think this is right but not sure about bitwise operations here also scale could be just x since we only get one scale value in this file, 
+			//	but i put it as 3 since it would theoretically effect x, y, and z directions
+			*poseGroup_out->channel = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz | a3poseChannel_user_xyz;
+
+			while (!feof(file))
+			{
+				//printf("number %zu\n", part);
+				strcpy(charBuffer, "");
+				strcpy(extraBuffer, "");
+				switch (part)
+				{
+				case 0: //Before Header
+					fgets(charBuffer, sizeof(charBuffer), file);
+					
+					size_t len = strlen(charBuffer);
+					if (strcmp(charBuffer, "[Header]\n") == 0)
+						part++;
+					
+					break;
+				case 1: //Header
+					if (fgets(charBuffer, sizeof(charBuffer), file))
+					{
+						if (strcmp(charBuffer, "[SegmentNames&Hierarchy]\n\0") == 0)
+							part++;
+						else if (strncmp(charBuffer, "NumSegments ", strlen("NumSegments ")) == 0)
+						{
+							strcpy(extraBuffer, charBuffer + strlen("NumSegments "));
+							hierarchy_out->numNodes = atoi(extraBuffer);
+						}
+						else if (strncmp(charBuffer, "NumFrames ", strlen("NumFrames ")) == 0)
+						{
+							strcpy(extraBuffer, charBuffer + strlen("NumFrames "));
+							hierarchy_out->numNodes = atoi(extraBuffer);
+						}
+						else if (strncmp(charBuffer, "DataFrameRate ", strlen("DataFrameRate ")) == 0)
+						{
+							strcpy(extraBuffer, charBuffer + strlen("DataFrameRate "));
+							frameRate = (float)atoi(extraBuffer);
+							secondsPerSample = 1 / frameRate;
+						}
+						else if (strncmp(charBuffer, "EulerRotationOrder ", strlen("EulerRotationOrder ")) == 0)//Might be a problem here with memory and c, not sure
+						{
+							strcpy(extraBuffer, charBuffer + strlen("EulerRotationOrder "));
+							
+							if (strncmp(extraBuffer, "ZYX", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_zyx;
+							}
+							else if (strncmp(extraBuffer, "XZY", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_xzy;
+							}
+							else if (strncmp(extraBuffer, "YXZ", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_yxz;
+							}
+							else if (strncmp(extraBuffer, "ZXY", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_zxy;
+							}
+							else if (strncmp(extraBuffer, "YZX", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_yzx;
+							}
+							else if (strncmp(extraBuffer, "XYZ", 3) == 0)
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_xyz;
+							}
+							else
+							{
+								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
+								*poseGroup_out->order = a3poseEulerOrder_zyx;
+							}
+						}
+						else if (strncmp(charBuffer, "CalibrationUnits ", strlen("CalibrationUnits ")) == 0)//only implementing mm
+						{
+							strcpy(extraBuffer, charBuffer + strlen("CalibrationUnits "));
+							if (strncmp(extraBuffer, "mm", strlen("mm")))
+								globalScale *= (float)0.001;
+							frameRate = (float)atoi(extraBuffer);
+							secondsPerSample = 1 / frameRate;
+						}
+						else if (strncmp(charBuffer, "ScaleFactor ", strlen("ScaleFactor ")) == 0)
+						{
+							strcpy(extraBuffer, charBuffer + strlen("CalibrationUnits "));
+							globalScale *= (float)atof(extraBuffer);
+						}
+						else
+						{
+							//Things we arent doing stuff for: FileType (assumed HTR), DataType (assumed HTRS), FileVersion (assumed as 1), 
+							//	RotationUnits (assumed to be degrees, but double check), GlobalAxisofGravity (assumed to be Y), BoneLengthAxis(assumed it is Y)
+						}
+					}
+					break;
+				case 2: //Hierarchy
+					for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
+					{
+						fgets(charBuffer, sizeof(charBuffer), file);
+
+						//strcspn for length of a string up to the first occurence of char
+						
+						strncpy(extraBuffer, charBuffer, strcspn(charBuffer, "\t"));
+						extraBuffer[strcspn(charBuffer, "\t")] = '\0';
+						
+						/*int bleh;
+						memcpy(bleh, extraBuffer, strlen(extraBuffer));
+
+						memcpy(extraBuffer, charBuffer, bleh);*/
+						if (hierarchy_out->nodes != NULL)
+						{
+							hierarchy_out->nodes[i].index = i;
+							strcpy(hierarchy_out->nodes[i].name, extraBuffer);
+							hierarchy_out->nodes[i].parentIndex = -1;
+
+							strcpy(extraBuffer, "");
+							strncpy(extraBuffer, charBuffer + strcspn(charBuffer, "\t") + 1, strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1));
+							extraBuffer[strlen(charBuffer) - strcspn(charBuffer, "\t") - 2] = '\0';
+
+							for (a3ui32 j = 0; j < i; j++)
+							{
+								if (strcmp(hierarchy_out->nodes[j].name, extraBuffer) == 0)
+									hierarchy_out->nodes[i].parentIndex = hierarchy_out->nodes[j].index;
+							}
+						}
+						else
+						{
+							hierarchy_out->nodes = malloc(hierarchy_out->numNodes * sizeof(a3_HierarchyNode));
+
+							hierarchy_out->nodes[i].index = 0;
+							strcpy(hierarchy_out->nodes[i].name, extraBuffer);
+							hierarchy_out->nodes[i].parentIndex = -1;
+						}
+					}
+
+					while (true)
+					{
+						if (feof(file)) break;
+						
+						fgets(charBuffer, sizeof(charBuffer), file);
+						if (strncmp(charBuffer, "[BasePosition]\n", strlen("[BasePosition]\n")) == 0)
+						{
+							part++;
+							break;
+						}
+					}
+					
+					
+					printf(charBuffer);
+					break;
+				case 3: //Base Position
+					fgets(charBuffer, sizeof(charBuffer), file);
+					break;
+				case 4: //Other Poses
+					break;
+				default:
+					fgets(charBuffer, sizeof(charBuffer), file);
+					break;
+				}
 			}
 		}
+
+		//should concat to get hierarchy pose
+
+		//poseGroup_out->channel
+
+		//used to test if hierarchy is defined properly
+		/*for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
+		{
+			printf(hierarchy_out->nodes[i].name);
+			printf("\t%d", hierarchy_out->nodes[i].index);
+			printf("\t%d\n", hierarchy_out->nodes[i].parentIndex);
+		}*/
 
 		fclose(file);
 //-----------------------------------------------------------------------------
