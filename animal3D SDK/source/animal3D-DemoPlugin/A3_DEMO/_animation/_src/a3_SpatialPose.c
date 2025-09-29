@@ -41,27 +41,66 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		// -> concat (matrix mul) them in the correct order
 		//		-> v' = t + R * S * v
 
-		//temp solution for testing
-		a3real4x4SetRotateZYX(spatialPose->transformMat.m,
-			a3trigValid_sind(spatialPose->rotate.x), a3trigValid_sind(spatialPose->rotate.y), a3trigValid_sind(spatialPose->rotate.z));
+		if (channel && a3poseChannel_scale_x)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.x);
+		if (channel && a3poseChannel_scale_y)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.y);
+		if (channel && a3poseChannel_scale_z)
+			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.z);
 
-		//not temp
+		switch (order)
+		{
+		case 0:
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			break;
+		case 1:
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			break;
+		case 2:
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			break;
+		case 3:
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			break;
+		case 4:
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			break;
+		case 5:
+			if (channel && a3poseChannel_rotate_x)
+				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
+			if (channel && a3poseChannel_rotate_y)
+				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
+			if (channel && a3poseChannel_rotate_z)
+				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
+			break;
+		}
+
 		a3real4Add(spatialPose->transformMat.m[3], spatialPose->translate.v);
-
-		//**DO THIS EVERYWHERE IN THIS FILE:
-		//		-> make sure rotation angles are within [-360, +360]
-
-		// while(rotation > 360 || rotation < -360)
-		// {
-		// if(rotation >360)
-		// {
-		// rotation -= 360;
-		// }
-		// if(rotation < -360)
-		// {
-		// rotation += 360;
-		// }
-		// }
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
@@ -112,7 +151,8 @@ a3i32 a3spatialPoseConcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPose*
 		// Add the two pose channels together
 		//	 scale is multiplicative, not additive
 
-		a3real4Sum(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
+		a3real4Sum(spatialPose_out->transformDQ.QQ, spatialPose_lhs->transformDQ.QQ, spatialPose_rhs->transformDQ.QQ);
+		//a3real4Sum(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
 		a3real4Sum(spatialPose_out->translate.v, spatialPose_lhs->translate.v, spatialPose_rhs->translate.v);
 		a3real4ProductComp(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
 
@@ -134,7 +174,8 @@ a3i32 a3spatialPoseDeconcat(a3_SpatialPose* spatialPose_out, const a3_SpatialPos
 //-----------------------------------------------------------------------------
 		
 		//author: class demo code
-		a3real4Diff(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
+		a3real4Diff(spatialPose_out->transformDQ.QQ, spatialPose_lhs->transformDQ.QQ, spatialPose_rhs->transformDQ.QQ);
+		//a3real4Diff(spatialPose_out->rotate.v, spatialPose_lhs->rotate.v, spatialPose_rhs->rotate.v);
 		a3real4Diff(spatialPose_out->translate.v, spatialPose_lhs->translate.v, spatialPose_rhs->translate.v);
 		a3real4QuotientComp(spatialPose_out->scale.v, spatialPose_lhs->scale.v, spatialPose_rhs->scale.v);
 
@@ -154,10 +195,10 @@ a3i32 a3spatialPoseLerp(a3_SpatialPose* spatialPose_out, const a3_SpatialPose* s
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 		
-		//author: class demo code
-		a3real4Lerp(spatialPose_out->rotate.v, spatialPose_0->rotate.v, spatialPose_1->rotate.v, u);
+		a3real4Slerp(spatialPose_out->transformDQ.QQ, spatialPose_0->transformDQ.QQ, spatialPose_1->transformDQ.QQ, u);
+		//a3real4Lerp(spatialPose_out->rotate.v, spatialPose_0->rotate.v, spatialPose_1->rotate.v, u);
 		a3real4Lerp(spatialPose_out->translate.v, spatialPose_0->translate.v, spatialPose_1->translate.v, u);
-		a3real4Lerp(spatialPose_out->scale.v, spatialPose_0->scale.v, spatialPose_1->scale.v, u); // no logLerp :/
+		a3real4Lerp(spatialPose_out->scale.v, spatialPose_0->scale.v, spatialPose_1->scale.v, u);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-2
