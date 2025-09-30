@@ -364,7 +364,11 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						{
 							part++;
 							a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, samplecount);
-							poseGroup_out->order = &eulerOrder;
+							for (size_t i = 0; i < hierarchy_out->numNodes; i++)
+							{
+								poseGroup_out->order[i] = eulerOrder;
+								poseGroup_out->channel[i] = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz;
+							}
 						}
 						else if (strncmp(charBuffer, "NumSegments ", strlen("NumSegments ")) == 0)
 						{
@@ -418,9 +422,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						}
 						else if (strncmp(charBuffer, "CalibrationUnits ", strlen("CalibrationUnits ")) == 0)//only implementing mm
 						{
-							globalScale *= (float)0.001;/*
-							frameRate = (float)atoi(extraBuffer);
-							secondsPerSample = 1 / frameRate;*/
+							globalScale *= (float)0.001;
 						}
 						else if (strncmp(charBuffer, "ScaleFactor ", strlen("ScaleFactor ")) == 0)
 						{
@@ -542,7 +544,6 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						a3ui32 nodeIndex;
 						a3ui32 totalOffset = 0;
 						a3ui32 offset = 0;
-						int x = 0;
 						while (true)
 						{
 							if (feof(file)) break;
@@ -564,7 +565,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 
 									if (i == 0)
 									{
-										totalOffset += offset;
+										totalOffset += offset + 1;
 									}
 
 									fgets(charBuffer, sizeof(charBuffer), file);
@@ -619,12 +620,10 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 								}
 							}
 							a3ui32 poseIndex = a3hierarchyPoseGroupGetNodePoseOffsetIndex(poseGroup_out, offset, nodeIndex);
-							posePtr = poseGroup_out->pose + (offset + totalOffset * hierarchy_out->numNodes);
+							posePtr = poseGroup_out->pose + (poseIndex + totalOffset * hierarchy_out->numNodes);
 							a3spatialPoseSetTranslation(posePtr, translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
 							a3spatialPoseSetRotation(posePtr, rotation[0], rotation[1], rotation[2]);
-
 							a3spatialPoseSetScale(posePtr, scale, scale, scale);
-							x++;
 						}
 					}
 					break;
