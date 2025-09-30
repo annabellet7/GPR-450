@@ -330,14 +330,17 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 			a3ui32 samplecount;
 			float frameRate;
 			float globalScale = 100;//100 is for intended units (cm)
+			a3_SpatialPose* posePtr = 0;
+			a3_SpatialPoseEulerOrder eulerOrder;
+
 
 			char charBuffer[256];
 			char extraBuffer[256];
 
 			//i think this is right but not sure about bitwise operations here also scale could be just x since we only get one scale value in this file, 
 			//	but i put it as 3 since it would theoretically effect x, y, and z directions
-			poseGroup_out->channel = malloc(sizeof(a3_SpatialPoseChannel) * 4);
-			*poseGroup_out->channel = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz | a3poseChannel_user_xyz;
+			//poseGroup_out->channel = malloc(sizeof(a3_SpatialPoseChannel) * 4);
+			//*poseGroup_out->channel = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz | a3poseChannel_user_xyz;
 
 			while (!feof(file))
 			{
@@ -361,6 +364,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						{
 							part++;
 							a3hierarchyPoseGroupCreate(poseGroup_out, hierarchy_out, samplecount);
+							poseGroup_out->order = &eulerOrder;
 						}
 						else if (strncmp(charBuffer, "NumSegments ", strlen("NumSegments ")) == 0)
 						{
@@ -385,51 +389,42 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 							
 							if (strncmp(extraBuffer, "ZYX", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_zyx;
+								eulerOrder = a3poseEulerOrder_zyx;
 							}
 							else if (strncmp(extraBuffer, "XZY", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_xzy;
+								eulerOrder = a3poseEulerOrder_xzy;
 							}
 							else if (strncmp(extraBuffer, "YXZ", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_yxz;
+								eulerOrder = a3poseEulerOrder_yxz;
 							}
 							else if (strncmp(extraBuffer, "ZXY", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_zxy;
+								eulerOrder = a3poseEulerOrder_zxy;
 							}
 							else if (strncmp(extraBuffer, "YZX", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_yzx;
+								eulerOrder = a3poseEulerOrder_yzx;
 							}
 							else if (strncmp(extraBuffer, "XYZ", 3) == 0)
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_xyz;
+								eulerOrder = a3poseEulerOrder_xyz;
 							}
 							else
 							{
-								poseGroup_out->order = malloc(sizeof(a3_SpatialPoseEulerOrder));
-								*poseGroup_out->order = a3poseEulerOrder_zyx;
+								eulerOrder = a3poseEulerOrder_zyx;
 							}
 						}
 						else if (strncmp(charBuffer, "CalibrationUnits ", strlen("CalibrationUnits ")) == 0)//only implementing mm
 						{
-							strcpy(extraBuffer, charBuffer + strlen("CalibrationUnits "));
-							if (strncmp(extraBuffer, "mm", strlen("mm")))
-								globalScale *= (float)0.001;
+							globalScale *= (float)0.001;/*
 							frameRate = (float)atoi(extraBuffer);
-							secondsPerSample = 1 / frameRate;
+							secondsPerSample = 1 / frameRate;*/
 						}
 						else if (strncmp(charBuffer, "ScaleFactor ", strlen("ScaleFactor ")) == 0)
 						{
-							strcpy(extraBuffer, charBuffer + strlen("CalibrationUnits "));
+							strcpy(extraBuffer, charBuffer + strlen("ScaleFactor "));
 							globalScale *= (float)atof(extraBuffer);
 						}
 						else
@@ -494,6 +489,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 					for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
 					{
 						fgets(charBuffer, sizeof(charBuffer), file);
+						printf(charBuffer);
 						a3f32 translation[3];
 						a3f32 rotation[3];
 						for (a3ui32 k = 0; k < 8; k++)
@@ -503,70 +499,84 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 							{
 								case 0:
 									tempBuffer = strtok(charBuffer, "\t");
-									break;
+									continue;
 								case 1:
 									tempBuffer = strtok(NULL, "\t");
 									translation[0] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 2:
 									tempBuffer = strtok(NULL, "\t");
 									translation[1] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 3:
 									tempBuffer = strtok(NULL, "\t");
 									translation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetTranslation(&poseGroup_out->hpose->hpose_base[i], translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
-									break;
+									a3spatialPoseSetTranslation(&poseGroup_out->hpose->hpose_base[0], translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
+									continue;
 								case 4:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[0] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 5:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[1] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 6:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetRotation(&poseGroup_out->hpose->hpose_base[i], rotation[0], rotation[1], rotation[2]);
-									break;
+									a3spatialPoseSetRotation(&poseGroup_out->hpose->hpose_base[0], rotation[0], rotation[1], rotation[2]);
+									continue;
 								case 7:
 									tempBuffer = strtok(NULL, "\n");
 									a3f32 scale = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetScale(&poseGroup_out->hpose->hpose_base[i], scale, scale, scale);
-									break;
+									a3spatialPoseSetScale(&poseGroup_out->hpose->hpose_base[0], scale, scale, scale);
+									continue;
 							}
 						}
-
-						part++;
-						break;
 					}
+					part++;
+					break;
+					
 				case 4: //Other Poses
 					{
-						a3ui32 nodeIndex = 0;
-						a3ui32 keyframeIndex = 1;
-						a3ui32 keyframeOffset = 0;
+						a3ui32 nodeIndex;
+						a3ui32 totalOffset = 0;
+						a3ui32 offset = 0;
+						int x = 0;
 						while (true)
 						{
 							if (feof(file)) break;
 
 							fgets(charBuffer, sizeof(charBuffer), file);
+							printf(charBuffer);
+							if (charBuffer[0] == '#') continue;
+							if (strncmp(charBuffer, "[EndOfFile]", strlen("[EndOfFile]")) == 0)
+							{
+								fclose(file);
+								return 1;
+							}
 							
 							for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
 							{
 								if (strncmp(charBuffer + 1, hierarchy_out->nodes[i].name, strlen(hierarchy_out->nodes[i].name)) == 0)
 								{
-									nodeIndex = i;
+									nodeIndex = a3hierarchyGetNodeIndex(hierarchy_out, hierarchy_out->nodes[i].name);
+
 									if (i == 0)
 									{
-										keyframeIndex++;// = hierarchy_out->numNodes;
+										totalOffset += offset;
 									}
+
+									fgets(charBuffer, sizeof(charBuffer), file);
 								}
 							}
 
+							//if (feof(file)) break;
+
 							a3f32 translation[3];
 							a3f32 rotation[3];
-							a3ui32 poseIndex = a3hierarchyPoseGroupGetNodePoseOffsetIndex(poseGroup_out, keyframeOffset, nodeIndex);
+							a3f32 scale;
+
 							for (a3ui32 k = 0; k < 8; k++)
 							{
 								char* tempBuffer;
@@ -574,41 +584,47 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 								{
 								case 0:
 									tempBuffer = strtok(charBuffer, "\t");
-									keyframeOffset = atoi(tempBuffer) - 1;
-									break;
+									offset = atoi(tempBuffer) - 1;
+									continue;
 								case 1:
 									tempBuffer = strtok(NULL, "\t");
 									translation[0] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 2:
 									tempBuffer = strtok(NULL, "\t");
 									translation[1] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 3:
 									tempBuffer = strtok(NULL, "\t");
 									translation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetTranslation(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
-									break;
+									continue;
 								case 4:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[0] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 5:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[1] = (a3f32)atof(tempBuffer);
-									break;
+									continue;
 								case 6:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetRotation(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], rotation[0], rotation[1], rotation[2]);
-									break;
+									continue;
 								case 7:
 									tempBuffer = strtok(NULL, "\n");
-									a3f32 scale = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetScale(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], scale, scale, scale);
-									break;
+									scale = (a3f32)atof(tempBuffer);
+									continue;
+								default:
+									continue;
 								}
 							}
+							a3ui32 poseIndex = a3hierarchyPoseGroupGetNodePoseOffsetIndex(poseGroup_out, offset, nodeIndex);
+							posePtr = poseGroup_out->pose + (offset + totalOffset * hierarchy_out->numNodes);
+							a3spatialPoseSetTranslation(posePtr, translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
+							a3spatialPoseSetRotation(posePtr, rotation[0], rotation[1], rotation[2]);
+
+							a3spatialPoseSetScale(posePtr, scale, scale, scale);
+							x++;
 						}
 					}
 					break;
