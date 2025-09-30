@@ -114,17 +114,12 @@ a3i32 a3hierarchyPoseGroupLoadBinary(a3_HierarchyPoseGroup* poseGroup, a3_FileSt
 //-----------------------------------------------------------------------------
 
 				// fread
-				// -> create (pose group function)
-				
-				//a3i32 buffer[256];
-				//a3i32 bytesRead;
-				//while (bytesRead = fread(buffer, fileStream->bytes, sizeof(buffer) - 1, fp) > 0){}
+				ret += (a3ui32)fread(&poseGroup->hposeCount, 1, sizeof(a3ui32), fp);
+				a3hierarchyPoseGroupCreate(poseGroup, poseGroup->hierarchy, poseGroup->hposeCount);
+				ret += (a3ui32)fread(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hierarchy->numNodes * poseGroup->hposeCount, fp);
+				ret += (a3ui32)fread(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fread(poseGroup->order, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
 
-				ret += (a3ui32)fread(&poseGroup->poseCount, 1, sizeof(a3ui32), fp);
-
-				dataSize = sizeof(a3_SpatialPose) * poseGroup->poseCount;
-				poseGroup->pose = (a3_SpatialPose*)malloc(dataSize);
-				ret += (a3ui32)fread(poseGroup->pose, 1, dataSize, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -152,14 +147,11 @@ a3i32 a3hierarchyPoseGroupSaveBinary(a3_HierarchyPoseGroup const* poseGroup, a3_
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 				
-				//a3i32 buffer[256];
 				// fwrite
-				// -> 
-				//fwrite(buffer, fileStream->bytes, sizeof(buffer) - 1, fp);
-
-				ret += (a3ui32)fwrite(&poseGroup->poseCount, 1, sizeof(a3ui32), fp);
-				ret += (a3ui32)fwrite(poseGroup->pose, 1, sizeof(a3_SpatialPose) * poseGroup->poseCount, fp);
-
+				ret += (a3ui32)fwrite(&poseGroup->hposeCount, 1, sizeof(a3ui32), fp);
+				ret += (a3ui32)fwrite(poseGroup->pose, sizeof(a3_SpatialPose), poseGroup->hierarchy->numNodes * poseGroup->hposeCount, fp);
+				ret += (a3ui32)fwrite(poseGroup->channel, sizeof(a3_SpatialPoseChannel), poseGroup->hierarchy->numNodes, fp);
+				ret += (a3ui32)fwrite(poseGroup->order, sizeof(a3_SpatialPoseEulerOrder), poseGroup->hierarchy->numNodes, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -523,7 +515,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 								case 3:
 									tempBuffer = strtok(NULL, "\t");
 									translation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetTranslation(&poseGroup_out->pose[i], translation[0], translation[1], translation[2]);
+									a3spatialPoseSetTranslation(&poseGroup_out->hpose->hpose_base[i], translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
 									break;
 								case 4:
 									tempBuffer = strtok(NULL, "\t");
@@ -536,42 +528,89 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 								case 6:
 									tempBuffer = strtok(NULL, "\t");
 									rotation[2] = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetRotation(&poseGroup_out->pose[i], rotation[0], rotation[1], rotation[2]);
+									a3spatialPoseSetRotation(&poseGroup_out->hpose->hpose_base[i], rotation[0], rotation[1], rotation[2]);
 									break;
 								case 7:
 									tempBuffer = strtok(NULL, "\n");
 									a3f32 scale = (a3f32)atof(tempBuffer);
-									a3spatialPoseSetScale(&poseGroup_out->pose[i], scale, scale, scale);
+									a3spatialPoseSetScale(&poseGroup_out->hpose->hpose_base[i], scale, scale, scale);
 									break;
 							}
 						}
 
 						part++;
+						break;
 					}
 				case 4: //Other Poses
-					if (feof(file)) break;
-
-					fgets(charBuffer, sizeof(charBuffer), file);
-
-					for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
 					{
-						if (strncmp(charBuffer + 1, hierarchy_out->nodes[i].name, strlen(hierarchy_out->nodes[i].name)) == 0)
+						a3ui32 nodeIndex = 0;
+						a3ui32 keyframeIndex = 1;
+						a3ui32 keyframeOffset = 0;
+						while (true)
 						{
-							//a3f32 f;
-							char* tempBuffer;
-							printf(charBuffer);
-							for (a3ui32 j = 0; j < frameRate; j++)
+							if (feof(file)) break;
+
+							fgets(charBuffer, sizeof(charBuffer), file);
+							
+							for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
 							{
-								fgets(charBuffer, sizeof(charBuffer), file);
-								for (a3ui32 k = 0; k < 8; k++)
+								if (strncmp(charBuffer + 1, hierarchy_out->nodes[i].name, strlen(hierarchy_out->nodes[i].name)) == 0)
 								{
-									if (k == 0) continue;
+									nodeIndex = i;
+									if (i == 0)
+									{
+										keyframeIndex++;// = hierarchy_out->numNodes;
+									}
+								}
+							}
+
+							a3f32 translation[3];
+							a3f32 rotation[3];
+							a3ui32 poseIndex = a3hierarchyPoseGroupGetNodePoseOffsetIndex(poseGroup_out, keyframeOffset, nodeIndex);
+							for (a3ui32 k = 0; k < 8; k++)
+							{
+								char* tempBuffer;
+								switch (k)
+								{
+								case 0:
 									tempBuffer = strtok(charBuffer, "\t");
-									printf(tempBuffer);
-									//printf('\t');
+									keyframeOffset = atoi(tempBuffer) - 1;
+									break;
+								case 1:
+									tempBuffer = strtok(NULL, "\t");
+									translation[0] = (a3f32)atof(tempBuffer);
+									break;
+								case 2:
+									tempBuffer = strtok(NULL, "\t");
+									translation[1] = (a3f32)atof(tempBuffer);
+									break;
+								case 3:
+									tempBuffer = strtok(NULL, "\t");
+									translation[2] = (a3f32)atof(tempBuffer);
+									a3spatialPoseSetTranslation(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], translation[0] * globalScale, translation[1] * globalScale, translation[2] * globalScale);
+									break;
+								case 4:
+									tempBuffer = strtok(NULL, "\t");
+									rotation[0] = (a3f32)atof(tempBuffer);
+									break;
+								case 5:
+									tempBuffer = strtok(NULL, "\t");
+									rotation[1] = (a3f32)atof(tempBuffer);
+									break;
+								case 6:
+									tempBuffer = strtok(NULL, "\t");
+									rotation[2] = (a3f32)atof(tempBuffer);
+									a3spatialPoseSetRotation(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], rotation[0], rotation[1], rotation[2]);
+									break;
+								case 7:
+									tempBuffer = strtok(NULL, "\n");
+									a3f32 scale = (a3f32)atof(tempBuffer);
+									a3spatialPoseSetScale(/*&poseGroup_out->pose[keyframeIndex] + poseIndex*/&poseGroup_out->hpose->hpose_base[1], scale, scale, scale);
+									break;
 								}
 							}
 						}
+					}
 					break;
 				default:
 					fgets(charBuffer, sizeof(charBuffer), file);
