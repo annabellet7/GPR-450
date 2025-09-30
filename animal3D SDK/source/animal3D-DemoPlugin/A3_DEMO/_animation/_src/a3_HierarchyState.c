@@ -446,7 +446,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 							strcpy(hierarchy_out->nodes[i].name, extraBuffer);
 							hierarchy_out->nodes[i].parentIndex = -1;
 
-							(extraBuffer, "");
+							strcpy(extraBuffer, "");
 							strncpy(extraBuffer, charBuffer + strcspn(charBuffer, "\t") + 1, strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1));
 							extraBuffer[strlen(charBuffer) - strcspn(charBuffer, "\t") - 2] = '\0';
 
