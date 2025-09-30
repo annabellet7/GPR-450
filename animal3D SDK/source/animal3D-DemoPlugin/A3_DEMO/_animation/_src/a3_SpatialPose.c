@@ -35,12 +35,9 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-2: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-		
-		// YOU WANT TO DO THIS PROPERLY
-		// -> form a single matrix for each channel
-		// -> concat (matrix mul) them in the correct order
-		//		-> v' = t + R * S * v
 
+		//do bitwise check for each channel to see if needed
+		//scale
 		if (channel && a3poseChannel_scale_x)
 			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.x);
 		if (channel && a3poseChannel_scale_y)
@@ -48,9 +45,10 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 		if (channel && a3poseChannel_scale_z)
 			a3real4x4SetScale(spatialPose->transformMat.m, spatialPose->scale.z);
 
+		//rotate
 		switch (order)
 		{
-		case 0:
+		case a3poseEulerOrder_xyz:
 			if (channel && a3poseChannel_rotate_z)
 				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
 			if (channel && a3poseChannel_rotate_y)
@@ -58,7 +56,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			if (channel && a3poseChannel_rotate_x)
 				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			break;
-		case 1:
+		case a3poseEulerOrder_yzx:
 			if (channel && a3poseChannel_rotate_x)
 				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			if (channel && a3poseChannel_rotate_z)
@@ -66,7 +64,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			if (channel && a3poseChannel_rotate_y)
 				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			break;
-		case 2:
+		case a3poseEulerOrder_zxy:
 			if (channel && a3poseChannel_rotate_y)
 				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			if (channel && a3poseChannel_rotate_x)
@@ -74,7 +72,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			if (channel && a3poseChannel_rotate_z)
 				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
 			break;
-		case 3:
+		case a3poseEulerOrder_yxz:
 			if (channel && a3poseChannel_rotate_z)
 				a3real4x4SetRotateZ(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.z));
 			if (channel && a3poseChannel_rotate_x)
@@ -82,7 +80,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			if (channel && a3poseChannel_rotate_y)
 				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			break;
-		case 4:
+		case a3poseEulerOrder_xzy:
 			if (channel && a3poseChannel_rotate_y)
 				a3real4x4SetRotateY(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.y));
 			if (channel && a3poseChannel_rotate_z)
@@ -90,7 +88,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			if (channel && a3poseChannel_rotate_x)
 				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			break;
-		case 5:
+		case a3poseEulerOrder_zyx:
 			if (channel && a3poseChannel_rotate_x)
 				a3real4x4SetRotateX(spatialPose->transformMat.m, a3trigValid_sind(spatialPose->rotate.x));
 			if (channel && a3poseChannel_rotate_y)
@@ -100,6 +98,7 @@ a3i32 a3spatialPoseConvert(a3_SpatialPose* spatialPose, const a3_SpatialPoseChan
 			break;
 		}
 
+		//translate
 		a3real4Add(spatialPose->transformMat.m[3], spatialPose->translate.v);
 
 //-----------------------------------------------------------------------------
