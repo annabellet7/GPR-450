@@ -112,9 +112,19 @@ a3i32 a3hierarchyPoseGroupLoadBinary(a3_HierarchyPoseGroup* poseGroup, a3_FileSt
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-				
+
 				// fread
 				// -> create (pose group function)
+				
+				//a3i32 buffer[256];
+				//a3i32 bytesRead;
+				//while (bytesRead = fread(buffer, fileStream->bytes, sizeof(buffer) - 1, fp) > 0){}
+
+				ret += (a3ui32)fread(&poseGroup->poseCount, 1, sizeof(a3ui32), fp);
+
+				dataSize = sizeof(a3_SpatialPose) * poseGroup->poseCount;
+				poseGroup->pose = (a3_SpatialPose*)malloc(dataSize);
+				ret += (a3ui32)fread(poseGroup->pose, 1, dataSize, fp);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
@@ -142,8 +152,14 @@ a3i32 a3hierarchyPoseGroupSaveBinary(a3_HierarchyPoseGroup const* poseGroup, a3_
 //****TO-DO-ANIM-OPTIONAL: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 				
+				//a3i32 buffer[256];
 				// fwrite
 				// -> 
+				//fwrite(buffer, fileStream->bytes, sizeof(buffer) - 1, fp);
+
+				ret += (a3ui32)fwrite(&poseGroup->poseCount, 1, sizeof(a3ui32), fp);
+				ret += (a3ui32)fwrite(poseGroup->pose, 1, sizeof(a3_SpatialPose) * poseGroup->poseCount, fp);
+
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-OPTIONAL
