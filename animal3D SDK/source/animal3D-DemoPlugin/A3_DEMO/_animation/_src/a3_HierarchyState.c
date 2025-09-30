@@ -374,7 +374,8 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						else if (strncmp(charBuffer, "NumFrames ", strlen("NumFrames ")) == 0)
 						{
 							strcpy(extraBuffer, charBuffer + strlen("NumFrames "));
-							hierarchy_out->numNodes = atoi(extraBuffer);
+							poseGroup_out->hposeCount = atoi(extraBuffer);
+							poseGroup_out->poseCount = atoi(extraBuffer);
 						}
 						else if (strncmp(charBuffer, "DataFrameRate ", strlen("DataFrameRate ")) == 0)
 						{
