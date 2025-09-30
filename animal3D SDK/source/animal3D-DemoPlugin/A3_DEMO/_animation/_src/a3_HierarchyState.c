@@ -344,7 +344,6 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 			//i think this is right but not sure about bitwise operations here also scale could be just x since we only get one scale value in this file, 
 			//	but i put it as 3 since it would theoretically effect x, y, and z directions
 			poseGroup_out->channel = malloc(sizeof(a3_SpatialPoseChannel) * 4);
-			hierarchy_out = malloc(sizeof(a3_Hierarchy));
 			*poseGroup_out->channel = a3poseChannel_rotate_xyz | a3poseChannel_scale_xyz | a3poseChannel_translate_xyz | a3poseChannel_user_xyz;
 
 			while (!feof(file))
@@ -375,8 +374,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 						else if (strncmp(charBuffer, "NumFrames ", strlen("NumFrames ")) == 0)
 						{
 							strcpy(extraBuffer, charBuffer + strlen("NumFrames "));
-							poseGroup_out->hposeCount = atoi(extraBuffer);
-							poseGroup_out->poseCount = atoi(extraBuffer);
+							hierarchy_out->numNodes = atoi(extraBuffer);
 						}
 						else if (strncmp(charBuffer, "DataFrameRate ", strlen("DataFrameRate ")) == 0)
 						{
@@ -445,7 +443,7 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 					}
 					break;
 				case 2: //Hierarchy
-					for (a3ui32 i = 0; i < hierarchy_out->numNodes - 1; i++)
+					for (a3ui32 i = 0; i < hierarchy_out->numNodes; i++)
 					{
 						fgets(charBuffer, sizeof(charBuffer), file);
 
@@ -464,19 +462,14 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 							strcpy(hierarchy_out->nodes[i].name, extraBuffer);
 							hierarchy_out->nodes[i].parentIndex = -1;
 
-							char tempBuffer[256];
-							strncpy(tempBuffer, charBuffer + strcspn(charBuffer, "\t") + 1, strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1));
-							tempBuffer[strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1)] = '\0';
-							printf(tempBuffer);
-							//extraBuffer[strlen(charBuffer) - strcspn(charBuffer, "\t") - 2] = '\0';
+							strcpy(extraBuffer, "");
+							strncpy(extraBuffer, charBuffer + strcspn(charBuffer, "\t") + 1, strcspn(charBuffer, "\n") - (strcspn(charBuffer, "\t") + 1));
+							extraBuffer[strlen(charBuffer) - strcspn(charBuffer, "\t") - 2] = '\0';
 
 							for (a3ui32 j = 0; j < i; j++)
 							{
 								if (strcmp(hierarchy_out->nodes[j].name, extraBuffer) == 0)
-								{
 									hierarchy_out->nodes[i].parentIndex = hierarchy_out->nodes[j].index;
-									break;
-								}
 							}
 						}
 						else
@@ -492,13 +485,15 @@ a3i32 a3hierarchyPoseGroupLoadHTR(a3_HierarchyPoseGroup* poseGroup_out, a3_Hiera
 					while (true)
 					{
 						if (feof(file)) break;
-
+						
+						fgets(charBuffer, sizeof(charBuffer), file);
 						if (strncmp(charBuffer, "[BasePosition]\n", strlen("[BasePosition]\n")) == 0)
 						{
 							part++;
 							break;
 						}
 					}
+					
 					
 					printf(charBuffer);
 					break;
