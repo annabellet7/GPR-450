@@ -103,7 +103,12 @@ static inline void a3kinematicsSolveInverseSingle(const a3_HierarchyState* hiera
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+	// T[this_local] = T[parent_object]^-1 * T[this_object]
+	a3real4x4Product(
+		hierarchyState->localSpace->hpose_base[index].transformMat.m,		// Result: this node local space.
+		hierarchyState->objectSpaceInv->hpose_base[parentIndex].transformMat.m,// Left-hand: parent node object-space.
+		hierarchyState->objectSpace->hpose_base[index].transformMat.m		// Right-hand: this node object space.
+	);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -115,7 +120,7 @@ static inline void a3kinematicsSolveInverseRoot(const a3_HierarchyState* hierarc
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+	hierarchyState->localSpace->hpose_base[index] = hierarchyState->objectSpace->hpose_base[index];
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -138,7 +143,16 @@ a3i32 a3kinematicsSolveInversePartial(const a3_HierarchyState* hierarchyState, c
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+		const a3_HierarchyNode* itr = hierarchyState->hierarchy->nodes + firstIndex;
+		const a3_HierarchyNode* const end = itr + nodeCount;
+		for (; itr < end; ++itr)
+		{
+			if (itr->parentIndex >= 0)
+				a3kinematicsSolveInvSingle(hierarchyState, itr->index, itr->parentIndex);
+			else
+				a3kinematicsSolveInvRoot(hierarchyState, itr->index);
+		}
+		return (a3i32)(end - itr);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -194,7 +208,17 @@ void a3kinematicsUpdateHierarchyStateIK(a3_HierarchyState* activeHS,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+		a3kinematicsSolveInverse(activeHS);
+		a3hierarchyPoseRestore(
+			activeHS->localSpace,
+			activeHS->hierarchy->numNodes,
+			poseGroup->channel,
+			poseGroup->order);
+		a3hierarchyPoseDeconcat(
+			activeHS->animPose,
+			activeHS->localSpace,
+			baseHS->localSpace,
+			activeHS->hierarchy->numNodes);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
