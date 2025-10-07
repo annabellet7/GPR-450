@@ -267,7 +267,7 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-
+	//a3real4x4SetReal4x4();
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -294,7 +294,21 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	// FIRST STEP:
+		// transform everything into the space of the skeleton/hierarchy (inverse function)
+		//	-> look at target
 
+	// MAIN STEP:
+		// solver: build an orthonormal basis (joint-to-object)
+		// 1. direction basis = target - joint position
+		// 2. side basis = known up x direction basis
+			// cancels out if lookAt target is directly above character
+		// 3. up basis = direction basis x side basis
+		// 4. normalize all
+
+	// LAST STEP:
+		// resolve every affected joint
+		//a3kinematicResolvePostIK
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -326,7 +340,29 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	// FIRST STEP:
+		// transform everything into the space of the skeleton/hierarchy (inverse function)
+		// -> wrist/ankle effector
+		// -> pole vector constraint
 
+	// MAIN STEP:
+		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
+		// -> end position*
+		// -> hinge position*
+		// *if the target is too far away, you can just calculate the position between the base and the target
+		// 1. base joint to end effector vector (and distance)
+		// 2. base joint to pole vector constraint
+		// 3. plane normal = (base to pole) x (base to end)
+		// 4. geometric (heron's formula) or algebraic (law of cosines)
+		// -> solves elbow position
+		// 5. "look at" solves shoulder and elbow rotations
+
+	// LAST STEP:
+		// resolve every affected joint
+		//  -> work from root to leaf
+		//a3kinematicResolvePostIK (closest to root)
+		//a3kinematicResolvePostIK
+		//a3kinematicResolvePostIK (closest to end)
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
