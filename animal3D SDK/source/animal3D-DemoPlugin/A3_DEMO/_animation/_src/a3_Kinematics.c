@@ -148,9 +148,9 @@ a3i32 a3kinematicsSolveInversePartial(const a3_HierarchyState* hierarchyState, c
 		for (; itr < end; ++itr)
 		{
 			if (itr->parentIndex >= 0)
-				a3kinematicsSolveInvSingle(hierarchyState, itr->index, itr->parentIndex);
+				a3kinematicsSolveInverseSingle(hierarchyState, itr->index, itr->parentIndex);
 			else
-				a3kinematicsSolveInvRoot(hierarchyState, itr->index);
+				a3kinematicsSolveInverseRoot(hierarchyState, itr->index);
 		}
 		return (a3i32)(end - itr);
 
