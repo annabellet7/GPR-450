@@ -267,6 +267,8 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
+	//similar to a3spatialPoseConvert in a3_spatialpose.c
+
 	//a3real4x4SetReal4x4();
 
 //-----------------------------------------------------------------------------
@@ -297,7 +299,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// FIRST STEP:
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		//	-> look at target
-
+	
 	// MAIN STEP:
 		// solver: build an orthonormal basis (joint-to-object)
 		// 1. direction basis = target - joint position
@@ -309,7 +311,6 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// LAST STEP:
 		// resolve every affected joint
 		//a3kinematicResolvePostIK
-
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
@@ -344,7 +345,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		// -> wrist/ankle effector
 		// -> pole vector constraint
-
+	
 	// MAIN STEP:
 		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
 		// -> end position*
