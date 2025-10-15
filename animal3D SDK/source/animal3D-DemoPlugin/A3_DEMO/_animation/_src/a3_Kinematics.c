@@ -269,16 +269,18 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 
 	//similar to a3spatialPoseConvert in a3_spatialpose.c
 
-	//a3real4 id;
-	//a3real4x4SetIdentity(id);
-
-	//a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, baseHS->localSpace->hpose_base[nodeIndex].transformMat.m);
+	a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, j2obj);
 	// objInv = obj x identity
-	// -a3real4x4Product(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, id, activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m);
+	a3real4x4TransformInverse(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m);
+	
 	//localMatrix = parentObjInv x nodeObj
 	// -maybe use a3kinematicsSolveInverseSingle()
-	//a3hierarchyPoseRestore(/*pose_inout*/, /*nodeCount*/, /*channel*/, /*order*/);
-	//a3spatialPoseDeconcat(/*spatialPose_out*/, /*spatailPose_lhs*/, /*spatialPose_rhs*/);
+	a3kinematicsSolveInverseSingle(activeHS, nodeIndex, activeHS->hierarchy->nodes[nodeIndex].parentIndex);
+	a3spatialPoseRestore(poseGroup->pose, poseGroup->channel, poseGroup->order);
+	a3spatialPoseDeconcat(&activeHS->animPose->hpose_base[nodeIndex], 
+						  &activeHS->localSpace->hpose_base[nodeIndex], 
+						  &baseHS->localSpace->hpose_base[nodeIndex]
+	);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
