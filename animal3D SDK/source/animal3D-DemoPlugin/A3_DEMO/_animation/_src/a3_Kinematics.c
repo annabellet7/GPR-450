@@ -276,7 +276,7 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	//localMatrix = parentObjInv x nodeObj
 	// -maybe use a3kinematicsSolveInverseSingle()
 	a3kinematicsSolveInverseSingle(activeHS, nodeIndex, activeHS->hierarchy->nodes[nodeIndex].parentIndex);
-	a3spatialPoseRestore(poseGroup->pose, poseGroup->channel, poseGroup->order);
+	a3spatialPoseRestore(poseGroup->pose, *poseGroup->channel, *poseGroup->order);
 	a3spatialPoseDeconcat(&activeHS->animPose->hpose_base[nodeIndex], 
 						  &activeHS->localSpace->hpose_base[nodeIndex], 
 						  &baseHS->localSpace->hpose_base[nodeIndex]
@@ -310,21 +310,40 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// FIRST STEP:
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		//	-> look at target
-	//a3kinematicsSolveInverseSingle(activeHS, hierarchyObjIndex_affected, /*parentIndex*/);
+	a3kinematicsSolveInverseSingle(activeHS, 
+								   hierarchyObjIndex_affected, 
+								   poseGroup->hierarchy->nodes[hierarchyObjIndex_affected].parentIndex
+	);
 
 	// MAIN STEP:
 		// solver: build an orthonormal basis (joint-to-object)
 		// 1. direction basis = target - joint position
-		// basis = activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate - 	sceneGraphState->hpose->hpose_base[sceneGraphIndex_effector].translate;
+	a3real4 basisVector, sideBasis, up, upBasis, targetPos, jointPos;
+	a3real4SetReal4(targetPos, &activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate);
+	a3real4SetReal4(jointPos, &sceneGraphState->hpose->hpose_base[sceneGraphIndex_effector].translate);
+	a3real4Diff(&basisVector, &targetPos, &jointPos);
 		// 2. side basis = known up x direction basis
-		//	sideBasis = a3real3Cross(up, basis);
+	a3real4Set(&up, 0, 0, 1, 0);
+	a3real3Cross(&sideBasis, &up, &basisVector);
 			// cancels out if lookAt target is directly above character
 		// 3. up basis = direction basis x side basis
+	a3real3Cross(&upBasis, &basisVector, &sideBasis);
 		// 4. normalize all
-
+	a3real3Normalize(&basisVector);
+	a3real3Normalize(&sideBasis);
+	a3real3Normalize(&upBasis);
+	a3real4x4 mat;
+	//a3_Basis basis = a3basisInit(basis_yp, basis_zp);
+	//a3basisToMat4();
+	a3real4 lastLine;
+	a3real4Set(&lastLine, 0, 0, 0, 1);
+	a3mat4 orthobasis;
+	a3real4x4SetMajors(&orthobasis, &basisVector, &sideBasis, &upBasis, &lastLine);
+	//a3real4x4Set();
 	// LAST STEP:
 		// resolve every affected joint
 		//a3kinematicResolvePostIK
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, &orthobasis);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
