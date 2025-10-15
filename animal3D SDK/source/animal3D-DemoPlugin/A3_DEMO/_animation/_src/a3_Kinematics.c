@@ -255,7 +255,7 @@ void a3kinematicsUpdateHierarchyStateSkin(a3_HierarchyState* activeHS,
 // helper to resolve single-joint IK after solver
 static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 	a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
-	a3ui32 const nodeIndex, a3real4x4 const j2obj)
+	a3ui32 const nodeIndex, a3real4x4 const j2obj /*something basis related*/)
 {
 	// post-IK resolution for single affected joint
 	//	-> reassign resolved transform to object-space
@@ -269,7 +269,16 @@ static void a3kinematicsResolvePostIK(a3_HierarchyState* activeHS,
 
 	//similar to a3spatialPoseConvert in a3_spatialpose.c
 
-	//a3real4x4SetReal4x4();
+	//a3real4 id;
+	//a3real4x4SetIdentity(id);
+
+	//a3real4x4SetReal4x4(activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m, baseHS->localSpace->hpose_base[nodeIndex].transformMat.m);
+	// objInv = obj x identity
+	// -a3real4x4Product(activeHS->objectSpaceInv->hpose_base[nodeIndex].transformMat.m, id, activeHS->objectSpace->hpose_base[nodeIndex].transformMat.m);
+	//localMatrix = parentObjInv x nodeObj
+	// -maybe use a3kinematicsSolveInverseSingle()
+	//a3hierarchyPoseRestore(/*pose_inout*/, /*nodeCount*/, /*channel*/, /*order*/);
+	//a3spatialPoseDeconcat(/*spatialPose_out*/, /*spatailPose_lhs*/, /*spatialPose_rhs*/);
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
@@ -299,11 +308,14 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// FIRST STEP:
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		//	-> look at target
-	
+	//a3kinematicsSolveInverseSingle(activeHS, hierarchyObjIndex_affected, /*parentIndex*/);
+
 	// MAIN STEP:
 		// solver: build an orthonormal basis (joint-to-object)
 		// 1. direction basis = target - joint position
+		// basis = activeHS->hpose->hpose_base[hierarchyObjIndex_affected].translate - 	sceneGraphState->hpose->hpose_base[sceneGraphIndex_effector].translate;
 		// 2. side basis = known up x direction basis
+		//	sideBasis = a3real3Cross(up, basis);
 			// cancels out if lookAt target is directly above character
 		// 3. up basis = direction basis x side basis
 		// 4. normalize all
