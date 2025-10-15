@@ -377,14 +377,16 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	sideBasis[3] = 0;
 	upBasis[3] = 0;
 	a3real4Set(lastLine, 0, 0, 0, 1);
-	a3real4x4 orthobasis;
-	a3real4x4SetMinors(orthobasis, basisVector, sideBasis, upBasis, lastLine);
+	a3real4x4 temptempMat, tempMat, orthobasis;
+	a3real4x4SetMinors(temptempMat, basisVector, sideBasis, upBasis, lastLine);
+	a3real4x4SetMajors(tempMat, basisVector, sideBasis, upBasis, lastLine);
+	a3real4x4SetMinors(orthobasis, tempMat[1], tempMat[0], tempMat[2], tempMat[3]);
 	//a3real4x4Set();
 	// LAST STEP:
 		// resolve every affected joint
 		//a3kinematicResolvePostIK
-	a3real4x4Product(orthobasis, activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.m, orthobasis);
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, orthobasis);
+	a3real4x4Product(tempMat, activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.m, tempMat);
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, tempMat);
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
 //-----------------------------------------------------------------------------
