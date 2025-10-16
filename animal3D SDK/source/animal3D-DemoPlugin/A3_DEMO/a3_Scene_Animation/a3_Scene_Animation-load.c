@@ -32,6 +32,9 @@
 
 #include "../a3_DemoState.h"
 
+void loadEffector(a3_Scene_Animation* scene, char jointName[], a3mat4 const skeletonToControl, a3_HierarchyState* hierarchyState, a3_SceneObject* sceneObject,
+a3real offsetX, a3real offsetY, a3real offsetZ);
+
 
 //-----------------------------------------------------------------------------
 
@@ -53,7 +56,7 @@ void a3animation_load_resetEffectors(a3_Scene_Animation* scene,
 
 	// need to properly transform joints to their parent frame
 	a3mat4 const skeletonToControl = scene->sceneGraphState->localSpace->hpose_base[j].transformMat;
-	a3vec4 controlLocator;
+	//a3vec4 controlLocator;
 
 	// bail
 	if (!hierarchyState->hierarchy)
@@ -61,111 +64,39 @@ void a3animation_load_resetEffectors(a3_Scene_Animation* scene,
 
 	// look-at effector
 	// position in front of neck
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:Neck");
-	sceneObject = scene->obj_skeleton_neckLookat_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x;
-	sceneObject->position.y = controlLocator.y + a3real_four;
-	sceneObject->position.z = controlLocator.z;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
+	loadEffector(scene, "mixamorig:Neck", skeletonToControl, hierarchyState, scene->obj_skeleton_neckLookat_ctrl, 0, a3real_four, 0);
 
 	// right wrist effector
 	// position above wrist
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:RightHand");
-	sceneObject = scene->obj_skeleton_wristEffector_r_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x + a3real_one;
-	sceneObject->position.y = controlLocator.y + a3real_one;
-	sceneObject->position.z = controlLocator.z + a3real_one;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
+	loadEffector(scene, "mixamorig:RightHand", skeletonToControl, hierarchyState, scene->obj_skeleton_wristEffector_r_ctrl, a3real_one, a3real_one, a3real_one);
 
 	// right wrist constraint
 	// position behind elbow
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:RightForeArm");
-	sceneObject = scene->obj_skeleton_wristConstraint_r_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x + a3real_half;
-	sceneObject->position.y = controlLocator.y - a3real_half;
-	sceneObject->position.z = controlLocator.z + a3real_half;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
-
+	loadEffector(scene, "mixamorig:RightForeArm", skeletonToControl, hierarchyState, scene->obj_skeleton_wristConstraint_r_ctrl, a3real_half, -a3real_half, a3real_half);
+	
 	// left wrist effector
 	// position above wrist
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:LeftHand");
-	sceneObject = scene->obj_skeleton_wristEffector_l_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x - a3real_one;
-	sceneObject->position.y = controlLocator.y + a3real_one;
-	sceneObject->position.z = controlLocator.z + a3real_one;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
+	loadEffector(scene, "mixamorig:LeftHand", skeletonToControl, hierarchyState, scene->obj_skeleton_wristEffector_l_ctrl, -a3real_one, a3real_one, a3real_one);
 
 	// left wrist constraint
 	// position behind elbow
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:LeftForeArm");
-	sceneObject = scene->obj_skeleton_wristConstraint_l_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x - a3real_half;
-	sceneObject->position.y = controlLocator.y - a3real_half;
-	sceneObject->position.z = controlLocator.z + a3real_half;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
-
+	loadEffector(scene, "mixamorig:LeftForeArm", skeletonToControl, hierarchyState, scene->obj_skeleton_wristConstraint_l_ctrl, -a3real_half, -a3real_half, a3real_half);
+	
 	// right ankle effector
 	// position on ankle
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:RightFoot");
-	sceneObject = scene->obj_skeleton_ankleEffector_r_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x + a3real_half;
-	sceneObject->position.y = controlLocator.y;
-	sceneObject->position.z = controlLocator.z;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
-
+	loadEffector(scene, "mixamorig:RightFoot", skeletonToControl, hierarchyState, scene->obj_skeleton_ankleEffector_r_ctrl, a3real_half, 0, 0);
+	
 	// right ankle constraint
 	// position in front of knee
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:RightLeg");
-	sceneObject = scene->obj_skeleton_ankleConstraint_r_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x + a3real_quarter;
-	sceneObject->position.y = controlLocator.y + a3real_half;
-	sceneObject->position.z = controlLocator.z;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
-
+	loadEffector(scene, "mixamorig:RightLeg", skeletonToControl, hierarchyState, scene->obj_skeleton_ankleConstraint_r_ctrl, a3real_quarter, a3real_half, 0);
+	
 	// left ankle effector
 	// position on ankle
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:LeftFoot");
-	sceneObject = scene->obj_skeleton_ankleEffector_l_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x - a3real_half;
-	sceneObject->position.y = controlLocator.y;
-	sceneObject->position.z = controlLocator.z;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
-
+	loadEffector(scene, "mixamorig:LeftFoot", skeletonToControl, hierarchyState, scene->obj_skeleton_ankleEffector_l_ctrl, -a3real_half, 0, 0);
+	
 	// left ankle constraint
 	// position in front of knee
-	j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, "mixamorig:LeftLeg");
-	sceneObject = scene->obj_skeleton_ankleConstraint_l_ctrl;
-	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
-		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
-	sceneObject->position.x = controlLocator.x - a3real_quarter;
-	sceneObject->position.y = controlLocator.y + a3real_half;
-	sceneObject->position.z = controlLocator.z;
-	sceneObject->scale.x = a3real_third;
-	sceneObject->scaleMode = 1;
+	loadEffector(scene, "mixamorig:LeftLeg", skeletonToControl, hierarchyState, scene->obj_skeleton_ankleConstraint_l_ctrl, -a3real_quarter, a3real_half, 0);
 }
 
 // utility to load animation

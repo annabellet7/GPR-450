@@ -199,3 +199,17 @@ void drawEffector(a3_Scene_Animation const* scene, a3_SceneShaderProgram const* 
 	a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, color);
 	a3vertexDrawableActivateAndRender(drawable[i]);
 }
+
+void loadEffector(a3_Scene_Animation* scene, char jointName[], a3mat4 const skeletonToControl, a3_HierarchyState* hierarchyState, a3_SceneObject* sceneObject,
+	a3real offsetX, a3real offsetY, a3real offsetZ)
+{
+	a3vec4 controlLocator;
+	a3ui32 j = a3hierarchyGetNodeIndex(scene->hierarchy_skel, jointName);
+	a3real4Real4x4Product(controlLocator.v, skeletonToControl.m,
+		hierarchyState->objectSpace->hpose_base[j].transformMat.v3.v);
+	sceneObject->position.x = controlLocator.x + offsetX;
+	sceneObject->position.y = controlLocator.y + offsetY;
+	sceneObject->position.z = controlLocator.z + offsetZ;
+	sceneObject->scale.x = a3real_third;
+	sceneObject->scaleMode = 1;
+}
