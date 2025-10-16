@@ -187,3 +187,15 @@ void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_Hi
 		sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
 		j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);
 }
+
+void drawEffector(a3_Scene_Animation const* scene, a3_SceneShaderProgram const* currentDemoProgram, a3_VertexDrawable const* drawable[], a3mat4 viewProjectionMat,
+	a3real const* color, a3_SceneObject const* obj)
+{
+	a3mat4 modelViewProjectionMat, modelMat;
+	a3ui32 i = (a3ui32)(obj - scene->object_scene);
+	modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
+	a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
+	a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
+	a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, color);
+	a3vertexDrawableActivateAndRender(drawable[i]);
+}

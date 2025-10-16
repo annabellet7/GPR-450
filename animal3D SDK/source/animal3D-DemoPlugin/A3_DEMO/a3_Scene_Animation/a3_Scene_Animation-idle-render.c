@@ -162,6 +162,9 @@ void a3demo_uploadHierarchyGraphics(
 	a3mat4 const* transform_mvp_joints, a3mat4 const* transform_mvp_bones, a3mat4 const* transform_t_skin, a3dualquat const* transform_dq_skin,
 	a3ui32 const max_transforms, a3ui32 const numNodes);
 
+void drawEffector(a3_Scene_Animation const* scene, a3_SceneShaderProgram const* currentDemoProgram, a3_VertexDrawable const* drawable[], a3mat4 viewProjectionMat,
+	a3real const* color, a3_SceneObject const* obj);
+
 
 // sub-routine for rendering the demo state using the shading pipeline
 void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const* scene, a3f64 const dt)
@@ -771,75 +774,16 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 			currentDemoProgram = demoState->prog_drawColorUnif;
 			a3shaderProgramActivate(currentDemoProgram->program);
 
-			i = (a3ui32)(scene->obj_skeleton_rig - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, cyan);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_neckLookat_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, cyan);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_wristEffector_r_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, magenta);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_wristConstraint_r_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, yellow);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_wristEffector_l_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, magenta);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_wristConstraint_l_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, yellow);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_ankleEffector_r_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, magenta);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_ankleConstraint_r_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, yellow);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_ankleEffector_l_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, magenta);
-			a3vertexDrawableActivateAndRender(drawable[i]);
-
-			i = (a3ui32)(scene->obj_skeleton_ankleConstraint_l_ctrl - scene->object_scene);
-			modelMat = scene->sceneGraphState->objectSpace->hpose_base[i].transformMat;
-			a3real4x4Product(modelViewProjectionMat.m, viewProjectionMat.m, modelMat.m);
-			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
-			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, yellow);
-			a3vertexDrawableActivateAndRender(drawable[i]);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, cyan, scene->obj_skeleton_rig);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, cyan, scene->obj_skeleton_neckLookat_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, magenta, scene->obj_skeleton_wristEffector_r_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, yellow, scene->obj_skeleton_wristConstraint_r_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, magenta, scene->obj_skeleton_wristEffector_l_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, yellow, scene->obj_skeleton_wristConstraint_l_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, magenta, scene->obj_skeleton_ankleEffector_r_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, yellow, scene->obj_skeleton_ankleConstraint_r_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, magenta, scene->obj_skeleton_ankleEffector_l_ctrl);
+			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, yellow, scene->obj_skeleton_ankleConstraint_l_ctrl);
 
 			// draw skeletal joint orientations
 			if (demoState->displayObjectAxes)
