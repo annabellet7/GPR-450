@@ -318,10 +318,17 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	// MAIN STEP:
 		// solver: build an orthonormal basis (joint-to-object)
 		// 1. direction basis = target - joint position
+
+	a3real4x4Product(
+		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.m,		// Result: this node local space.
+		activeHS->objectSpaceInv->hpose_base[hierarchyObjIndex_affected].transformMat.m,// Left-hand: parent node object-space.
+		sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.m		// Right-hand: this node object space.
+	);
+
 	a3real4 basisVector, sideBasis, up, upBasis, targetPos, jointPos;
-	jointPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
-	jointPos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
-	jointPos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z;
+	jointPos[0] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
+	jointPos[1] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
+	jointPos[2] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z;
 	jointPos[3] = 0;
 
 	targetPos[0] = sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x;
@@ -329,9 +336,12 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	targetPos[2] = sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
 	targetPos[3] = 0;
 
+	// from joe - turn each of these into a variable, then multiply by m_hierarchyObj & m_affected respectively
+	a3real3Real3x3MulL(targetPos, m_hierarchyObj.m);
+	a3real3Real3x3MulL(jointPos, m_affected.m);
 	a3real4Diff(basisVector, targetPos, jointPos);
 		// 2. side basis = known up x direction basis
-	
+
 	a3_BasisAxis upAxis, forwardAxis;
 	a3basisExtract(&forwardAxis, &upAxis, basis_affected);
 	switch (upAxis)
@@ -362,6 +372,8 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 		break;
 	}
 
+	//a3real3x3MakeLookAt
+
 	a3real3Cross(sideBasis, up, basisVector);
 			// cancels out if lookAt target is directly above character
 		// 3. up basis = direction basis x side basis
@@ -377,6 +389,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	sideBasis[3] = 0;
 	upBasis[3] = 0;
 	a3real4Set(lastLine, 0, 0, 0, 1);
+	//a3real3x3MakeLookAt();
 	a3real4x4 temptempMat, tempMat, orthobasis;
 	a3real4x4SetMinors(temptempMat, basisVector, sideBasis, upBasis, lastLine);
 	a3real4x4SetMajors(tempMat, basisVector, sideBasis, upBasis, lastLine);
