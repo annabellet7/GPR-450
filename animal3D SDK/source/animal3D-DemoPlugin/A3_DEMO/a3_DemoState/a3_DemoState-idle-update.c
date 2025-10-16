@@ -139,3 +139,51 @@ void a3demo_update(a3_DemoState *demoState, a3f64 const dt)
 
 
 //-----------------------------------------------------------------------------
+
+void a3SingleJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[])
+{
+	a3_SceneObject const* sceneObjectRoot = scene->obj_skeleton;
+	a3_Basis const basis_obj = a3basisInit(basis_yp, basis_zp);
+
+		// look-at effector object
+		a3_SceneObject const* sceneObject_effector = scene->obj_skeleton_neckLookat_ctrl;
+
+		// affected node
+		a3ui32 const j_neck = a3hierarchyGetNodeIndex(activeHS->hierarchy, jointName);
+		a3_Basis const basis_neck = a3basisInit(basis_zp, basis_yp);
+
+		// invoke IK
+		a3kinematicsUpdateLookAtIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
+			sceneObjectRoot->sceneGraphIndex, sceneObject_effector->sceneGraphIndex,
+			j_neck, basis_obj, basis_neck);
+}
+
+void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
+					char endName[], char hingeName[], char rootName[])
+{
+	a3_SceneObject const* sceneObjectRoot = scene->obj_skeleton;
+	a3_Basis const basis_obj = a3basisInit(basis_yp, basis_zp);
+
+	// right wrist effector object
+	a3_SceneObject const* sceneObject_wristEffector = scene->obj_skeleton_wristEffector_r_ctrl;
+
+	// write wrist constraint object
+	a3_SceneObject const* sceneObject_wristConstraint = scene->obj_skeleton_wristConstraint_r_ctrl;
+
+	// affected end node
+	a3ui32 const j_wrist = a3hierarchyGetNodeIndex(activeHS->hierarchy, endName);
+	a3_Basis const basis_wrist = a3basisInit(basis_zp, basis_yp);
+
+	// affected hinge node
+	a3ui32 const j_elbow = a3hierarchyGetNodeIndex(activeHS->hierarchy, hingeName);
+	a3_Basis const basis_elbow = a3basisInit(basis_xn, basis_yp);
+
+	// affected base node
+	a3ui32 const j_shoulder = a3hierarchyGetNodeIndex(activeHS->hierarchy, rootName);
+	a3_Basis const basis_shoulder = basis_elbow;
+
+	// invoke IK
+	a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
+		sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
+		j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);
+}

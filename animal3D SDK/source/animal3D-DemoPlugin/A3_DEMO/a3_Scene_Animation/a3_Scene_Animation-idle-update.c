@@ -52,6 +52,9 @@ void a3demo_updateHierarchyGraphics(
 	a3mat4* transform_mvp_joints, a3mat4* transform_mvp_bones, a3mat4* transform_t_skin, a3dualquat* transform_dq_skin, a3ui32 const max_transforms,
 	a3mat4 const mvp_obj, a3_HierarchyState const* activeHS);
 
+void a3SingleJointIK(a3_Scene_Animation* scene,	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[]);
+void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
+					char endName[], char hingeName[], char rootName[]);
 
 //-----------------------------------------------------------------------------
 // UPDATE
@@ -62,128 +65,11 @@ void a3animation_update_applyEffectors(a3_Scene_Animation* scene,
 	if (activeHS->hierarchy == baseHS->hierarchy &&
 		activeHS->hierarchy == poseGroup->hierarchy)
 	{
-		// hierarchy object
-		a3_SceneObject const* sceneObjectRoot = scene->obj_skeleton;
-		a3_Basis const basis_obj = a3basisInit(basis_yp, basis_zp);
-
-		// NECK LOOK-AT
-		{
-			// look-at effector object
-			a3_SceneObject const* sceneObject_effector = scene->obj_skeleton_neckLookat_ctrl;
-
-			// affected node
-			a3ui32 const j_neck = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:Neck");
-			a3_Basis const basis_neck = a3basisInit(basis_zp, basis_yp);
-
-			// invoke IK
-			a3kinematicsUpdateLookAtIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-				sceneObjectRoot->sceneGraphIndex, sceneObject_effector->sceneGraphIndex,
-				j_neck, basis_obj, basis_neck);
-		}
-
-		// RIGHT ARM REACH
-		{
-			// right wrist effector object
-			a3_SceneObject const* sceneObject_wristEffector = scene->obj_skeleton_wristEffector_r_ctrl;
-
-			// write wrist constraint object
-			a3_SceneObject const* sceneObject_wristConstraint = scene->obj_skeleton_wristConstraint_r_ctrl;
-
-			// affected end node
-			a3ui32 const j_wrist = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightHand");
-			a3_Basis const basis_wrist = a3basisInit(basis_zp, basis_yp);
-
-			// affected hinge node
-			a3ui32 const j_elbow = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightForeArm");
-			a3_Basis const basis_elbow = a3basisInit(basis_xn, basis_yp);
-
-			// affected base node
-			a3ui32 const j_shoulder = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightArm");
-			a3_Basis const basis_shoulder = basis_elbow;
-
-			// invoke IK
-			a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-				sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
-				j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);
-		}
-
-		// LEFT ARM REACH
-		{
-			// right wrist effector object
-			a3_SceneObject const* sceneObject_wristEffector = scene->obj_skeleton_wristEffector_l_ctrl;
-
-			// write wrist constraint object
-			a3_SceneObject const* sceneObject_wristConstraint = scene->obj_skeleton_wristConstraint_l_ctrl;
-
-			// affected end node
-			a3ui32 const j_wrist = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftHand");
-			a3_Basis const basis_wrist = a3basisInit(basis_zp, basis_yp);
-
-			// affected hinge node
-			a3ui32 const j_elbow = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftForeArm");
-			a3_Basis const basis_elbow = a3basisInit(basis_xp, basis_yn);
-
-			// affected base node
-			a3ui32 const j_shoulder = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftArm");
-			a3_Basis const basis_shoulder = basis_elbow;
-
-			// invoke IK
-			a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-				sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
-				j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);
-		}
-
-		// RIGHT LEG REACH
-		{
-			// right ankle effector object
-			a3_SceneObject const* sceneObject_ankleEffector = scene->obj_skeleton_ankleEffector_r_ctrl;
-
-			// write ankle constraint object
-			a3_SceneObject const* sceneObject_ankleConstraint = scene->obj_skeleton_ankleConstraint_r_ctrl;
-
-			// affected end node
-			a3ui32 const j_ankle = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightFoot");
-			a3_Basis const basis_ankle = a3basisInit(basis_zp, basis_yp);
-
-			// affected hinge node
-			a3ui32 const j_knee = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightLeg");
-			a3_Basis const basis_knee = a3basisInit(basis_yn, basis_xp);
-
-			// affected base node
-			a3ui32 const j_hip = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:RightUpLeg");
-			a3_Basis const basis_hip = basis_knee;
-
-			// invoke IK
-			a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-				sceneObjectRoot->sceneGraphIndex, sceneObject_ankleEffector->sceneGraphIndex, sceneObject_ankleConstraint->sceneGraphIndex,
-				j_ankle, j_knee, j_hip, basis_obj, basis_ankle, basis_knee, basis_hip);
-		}
-
-		// LEFT LEG REACH
-		{
-			// right ankle effector object
-			a3_SceneObject const* sceneObject_ankleEffector = scene->obj_skeleton_ankleEffector_l_ctrl;
-
-			// write ankle constraint object
-			a3_SceneObject const* sceneObject_ankleConstraint = scene->obj_skeleton_ankleConstraint_l_ctrl;
-
-			// affected end node
-			a3ui32 const j_ankle = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftFoot");
-			a3_Basis const basis_ankle = a3basisInit(basis_zp, basis_yp);
-
-			// affected hinge node
-			a3ui32 const j_knee = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftLeg");
-			a3_Basis const basis_knee = a3basisInit(basis_yn, basis_xp);
-
-			// affected base node
-			a3ui32 const j_hip = a3hierarchyGetNodeIndex(activeHS->hierarchy, "mixamorig:LeftUpLeg");
-			a3_Basis const basis_hip = basis_knee;
-
-			// invoke IK
-			a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-				sceneObjectRoot->sceneGraphIndex, sceneObject_ankleEffector->sceneGraphIndex, sceneObject_ankleConstraint->sceneGraphIndex,
-				j_ankle, j_knee, j_hip, basis_obj, basis_ankle, basis_knee, basis_hip);
-		}
+		a3SingleJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:Neck");
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm");
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftHand", "mixamorig:LeftForeArm", "mixamorig:LeftArm");
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightFoot", "mixamorig:RightLeg", "mixamorig:RightUpLeg");
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftFoot", "mixamorig:LeftLeg", "mixamorig:LeftUpLeg");
 	}
 }
 
