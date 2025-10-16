@@ -328,16 +328,22 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	//	sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.m		// Right-hand: this node object space.
 	//);
 
+	a3real4x4Product(sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.m,
+		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
+		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.m);
+
 	a3real4 basisVector, sideBasis, up, upBasis, targetPos, jointPos;
 	jointPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
 	jointPos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
 	jointPos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z;
 	jointPos[3] = 0;
 
-	targetPos[0] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x;
-	targetPos[1] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.y;
-	targetPos[2] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
+	targetPos[0] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.x;
+	targetPos[1] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.y;
+	targetPos[2] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
 	targetPos[3] = 0;
+
+	//a3real3Real3x3MulL(targetPos, sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat)
 
 	a3real4x4 obj;
 	a3real4x4 objInv;
