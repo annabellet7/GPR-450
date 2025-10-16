@@ -306,7 +306,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 //-----------------------------------------------------------------------------
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
-
+	
 	// FIRST STEP:
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		//	-> look at target
@@ -319,22 +319,31 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 		// solver: build an orthonormal basis (joint-to-object)
 		// 1. direction basis = target - joint position
 
-	a3real4x4Product(
-		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.m,		// Result: this node local space.
-		activeHS->objectSpaceInv->hpose_base[hierarchyObjIndex_affected].transformMat.m,// Left-hand: parent node object-space.
-		sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.m		// Right-hand: this node object space.
-	);
+	
+	//a3real4x4 mat;
+
+	//a3real4x4Product(
+	//	mat,		// Result: this node local space.
+	//	baseHS->objectSpaceInv->hpose_base[hierarchyObjIndex_affected].transformMat.m,// Left-hand: parent node object-space.
+	//	sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.m		// Right-hand: this node object space.
+	//);
 
 	a3real4 basisVector, sideBasis, up, upBasis, targetPos, jointPos;
-	jointPos[0] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
-	jointPos[1] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
-	jointPos[2] = activeHS->localSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z;
+	jointPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
+	jointPos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
+	jointPos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.z;
 	jointPos[3] = 0;
 
-	targetPos[0] = sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x;
-	targetPos[1] = sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.y;
-	targetPos[2] = sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
+	targetPos[0] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.x;
+	targetPos[1] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.y;
+	targetPos[2] = sceneGraphState->objectSpace->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
 	targetPos[3] = 0;
+
+	a3real4x4 obj;
+	a3real4x4 objInv;
+	a3real4Set(up, 0, 1, 0, 0);
+	a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, obj); return;
 
 	// from joe - turn each of these into a variable, then multiply by m_hierarchyObj & m_affected respectively
 	a3real3Real3x3MulL(targetPos, m_hierarchyObj.m);
