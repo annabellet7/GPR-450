@@ -633,7 +633,8 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		{
 			a3real3Diff(objBase[2], middlePos, basePos);//direction basis
 			a3real3Normalize(objBase[2]);
-			a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
+			a3real4SetReal3W(objBase[0], planeNormal , a3real_zero);
+			//a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
 			a3real3Cross(objBase[1], objBase[2], objBase[0]);//up basis
 
 			a3real4SetReal3W(objBase[3], basePos, a3real_one);
