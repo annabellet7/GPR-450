@@ -609,10 +609,11 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		// -> solves elbow position
 		a3real3 heightDir;
 		a3real3CrossUnit(heightDir, baseToEndForwardBasis, planeNormal);
+		a3real baseEffectorDist = a3real3Distance(basePos, effectorPos);
 
-		a3real s = a3real_onehalf * (armLength + baseHingeDist + hingeEndDist);
-		a3real A = a3sqrtf(s * (s - armLength) * (s - baseHingeDist) * (s - hingeEndDist));
-		a3real H = (2 * A) / armLength;
+		a3real s = (a3real)0.5 * (baseEffectorDist + baseHingeDist + hingeEndDist);
+		a3real A = a3sqrtf(s * (s - baseEffectorDist) * (s - baseHingeDist) * (s - hingeEndDist));
+		a3real H = (2 * A) / baseEffectorDist;
 
 		a3real D = a3sqrtf(baseHingeDist * baseHingeDist - H * H);
 		a3real3 d;
@@ -625,22 +626,44 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3Sum(middlePos, middlePos, heightDir);
 		middlePos[3] = 0;
 
-		a3real4x4 obj;
+		a3real4x4 objBase, objHinge, objEnd;
 		a3real4x4 objInv;
 		//a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
 		
 		{
-			a3real3Diff(obj[2], middlePos, basePos);//direction basis
-			a3real3Normalize(obj[2]);
-			a3real3CrossUnit(obj[0], up, obj[2]);//side basis
-			a3real3Cross(obj[1], obj[2], obj[0]);//up basis
+			a3real3Diff(objBase[2], middlePos, basePos);//direction basis
+			a3real3Normalize(objBase[2]);
+			a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
+			a3real3Cross(objBase[1], objBase[2], objBase[0]);//up basis
 
-			a3real4SetReal3W(obj[3], basePos, a3real_one);
-			obj[0][3] = obj[1][3] = obj[2][3] = a3real_zero;
-			a3real4x4TransformInverseIgnoreScale(objInv, obj);
+			a3real4SetReal3W(objBase[3], basePos, a3real_one);
+			objBase[0][3] = objBase[1][3] = objBase[2][3] = a3real_zero;
+			a3real4x4TransformInverseIgnoreScale(objInv, objBase);
 		}
+		//{
+		//	a3real3Diff(objHinge[2], effectorPos, middlePos);//direction basis
+		//	a3real3Normalize(objHinge[2]);
+		//	a3real3CrossUnit(objHinge[0], up, objHinge[2]);//side basis
+		//	a3real3Cross(objHinge[1], objHinge[2], objHinge[0]);//up basis
 
-		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, obj);
+		//	a3real4SetReal3W(objHinge[3], middlePos, a3real_one);
+		//	objHinge[0][3] = objHinge[1][3] = objHinge[2][3] = a3real_zero;
+		//	a3real4x4TransformInverseIgnoreScale(objInv, objHinge);
+		//}
+		//{
+		//	a3real3Diff(objEnd[2], effectorPos, endPos);//direction basis
+		//	a3real3Normalize(objEnd[2]);
+		//	a3real3CrossUnit(objEnd[0], up, objEnd[2]);//side basis
+		//	a3real3Cross(objEnd[1], objEnd[2], objEnd[0]);//up basis
+
+		//	a3real4SetReal3W(objEnd[3], endPos, a3real_one);
+		//	objEnd[0][3] = objEnd[1][3] = objEnd[2][3] = a3real_zero;
+		//	a3real4x4TransformInverseIgnoreScale(objInv, objEnd);
+		//}
+
+		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, objBase);
+		/*a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, objHinge);
+		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, objEnd);*/
 		//a3real3Proj();
 
 		// 5. "look at" solves shoulder and elbow rotations
