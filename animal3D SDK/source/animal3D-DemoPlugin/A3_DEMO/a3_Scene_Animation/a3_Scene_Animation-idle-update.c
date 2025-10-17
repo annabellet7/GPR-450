@@ -54,7 +54,7 @@ void a3demo_updateHierarchyGraphics(
 
 void a3SingleJointIK(a3_Scene_Animation* scene,	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[]);
 void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
-					char endName[], char hingeName[], char rootName[]);
+					char endName[], char hingeName[], char rootName[], a3_SceneObject const* effector, const* constraint);
 
 //-----------------------------------------------------------------------------
 // UPDATE
@@ -66,10 +66,14 @@ void a3animation_update_applyEffectors(a3_Scene_Animation* scene,
 		activeHS->hierarchy == poseGroup->hierarchy)
 	{
 		a3SingleJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:Neck");
-		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm");
-		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftHand", "mixamorig:LeftForeArm", "mixamorig:LeftArm");
-		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightFoot", "mixamorig:RightLeg", "mixamorig:RightUpLeg");
-		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftFoot", "mixamorig:LeftLeg", "mixamorig:LeftUpLeg");
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm",
+			scene->obj_skeleton_wristEffector_r_ctrl, scene->obj_skeleton_wristConstraint_r_ctrl);
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftHand", "mixamorig:LeftForeArm", "mixamorig:LeftArm",
+			scene->obj_skeleton_wristEffector_l_ctrl, scene->obj_skeleton_wristConstraint_l_ctrl);
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightFoot", "mixamorig:RightLeg", "mixamorig:RightUpLeg",
+			scene->obj_skeleton_ankleEffector_r_ctrl, scene->obj_skeleton_ankleConstraint_r_ctrl);
+		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftFoot", "mixamorig:LeftLeg", "mixamorig:LeftUpLeg",
+			scene->obj_skeleton_ankleEffector_l_ctrl, scene->obj_skeleton_ankleConstraint_l_ctrl);
 	}
 }
 

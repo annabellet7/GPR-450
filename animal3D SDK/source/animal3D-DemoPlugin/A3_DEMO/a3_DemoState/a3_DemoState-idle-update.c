@@ -159,16 +159,10 @@ void a3SingleJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_
 }
 
 void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
-					char endName[], char hingeName[], char rootName[])
+					char endName[], char hingeName[], char rootName[], a3_SceneObject const* effector, a3_SceneObject const* constraint)
 {
 	a3_SceneObject const* sceneObjectRoot = scene->obj_skeleton;
 	a3_Basis const basis_obj = a3basisInit(basis_yp, basis_zp);
-
-	// right wrist effector object
-	a3_SceneObject const* sceneObject_wristEffector = scene->obj_skeleton_wristEffector_r_ctrl;
-
-	// write wrist constraint object
-	a3_SceneObject const* sceneObject_wristConstraint = scene->obj_skeleton_wristConstraint_r_ctrl;
 
 	// affected end node
 	a3ui32 const j_wrist = a3hierarchyGetNodeIndex(activeHS->hierarchy, endName);
@@ -184,7 +178,7 @@ void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_Hi
 
 	// invoke IK
 	a3kinematicsUpdateLimbIK(scene->sceneGraphState, activeHS, baseHS, poseGroup,
-		sceneObjectRoot->sceneGraphIndex, sceneObject_wristEffector->sceneGraphIndex, sceneObject_wristConstraint->sceneGraphIndex,
+		sceneObjectRoot->sceneGraphIndex, effector->sceneGraphIndex, constraint->sceneGraphIndex,
 		j_wrist, j_elbow, j_shoulder, basis_obj, basis_wrist, basis_elbow, basis_shoulder);
 }
 
