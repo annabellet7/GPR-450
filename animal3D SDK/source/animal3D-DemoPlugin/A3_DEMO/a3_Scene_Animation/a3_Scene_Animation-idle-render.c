@@ -774,6 +774,7 @@ void a3animation_render(a3_DemoState const* demoState, a3_Scene_Animation const*
 			currentDemoProgram = demoState->prog_drawColorUnif;
 			a3shaderProgramActivate(currentDemoProgram->program);
 
+			//author: annabelle
 			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, cyan, scene->obj_skeleton_rig);
 			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, cyan, scene->obj_skeleton_neckLookat_ctrl);
 			drawEffector(scene, currentDemoProgram, drawable, viewProjectionMat, magenta, scene->obj_skeleton_wristEffector_r_ctrl);

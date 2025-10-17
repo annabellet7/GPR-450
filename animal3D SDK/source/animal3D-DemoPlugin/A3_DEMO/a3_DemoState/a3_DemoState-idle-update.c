@@ -140,6 +140,8 @@ void a3demo_update(a3_DemoState *demoState, a3f64 const dt)
 
 //-----------------------------------------------------------------------------
 
+//author annabelle
+
 void a3SingleJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[])
 {
 	a3_SceneObject const* sceneObjectRoot = scene->obj_skeleton;

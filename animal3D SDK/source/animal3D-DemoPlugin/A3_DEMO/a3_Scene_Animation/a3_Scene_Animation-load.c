@@ -61,6 +61,8 @@ void a3animation_load_resetEffectors(a3_Scene_Animation* scene,
 	// bail
 	if (!hierarchyState->hierarchy)
 		return;
+	
+	//author: annabelle
 
 	// look-at effector
 	// position in front of neck

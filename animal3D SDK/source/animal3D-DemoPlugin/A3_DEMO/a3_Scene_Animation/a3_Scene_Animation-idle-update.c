@@ -65,6 +65,7 @@ void a3animation_update_applyEffectors(a3_Scene_Animation* scene,
 	if (activeHS->hierarchy == baseHS->hierarchy &&
 		activeHS->hierarchy == poseGroup->hierarchy)
 	{
+		//author: annabelle
 		a3SingleJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:Neck");
 		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm",
 			scene->obj_skeleton_wristEffector_r_ctrl, scene->obj_skeleton_wristConstraint_r_ctrl);
