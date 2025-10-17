@@ -331,7 +331,7 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	a3real4x4Product(sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.m,
 		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
 		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector].transformMat.m);
-
+	
 	a3real4 basisVector, sideBasis, up, upBasis, targetPos, jointPos;
 	jointPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.x;
 	jointPos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected].transformMat.v3.y;
@@ -342,20 +342,6 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	targetPos[1] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.y;
 	targetPos[2] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat.v3.z;
 	targetPos[3] = 0;
-
-	//a3real3Real3x3MulL(targetPos, sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector].transformMat)
-
-	a3real4x4 obj;
-	a3real4x4 objInv;
-	a3real4Set(up, 0, 1, 0, 0);
-	a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, obj); return;
-
-	// from joe - turn each of these into a variable, then multiply by m_hierarchyObj & m_affected respectively
-	a3real3Real3x3MulL(targetPos, m_hierarchyObj.m);
-	a3real3Real3x3MulL(jointPos, m_affected.m);
-	a3real4Diff(basisVector, targetPos, jointPos);
-		// 2. side basis = known up x direction basis
 
 	a3_BasisAxis upAxis, forwardAxis;
 	a3basisExtract(&forwardAxis, &upAxis, basis_affected);
@@ -387,7 +373,27 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 		break;
 	}
 
-	//a3real3x3MakeLookAt
+	a3real4x4 obj;
+	a3real4x4 objInv;
+	//a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
+
+	{
+		a3real3Diff(obj[2], jointPos, targetPos);
+		a3real3Normalize(obj[2]);
+		a3real3CrossUnit(obj[0], up, obj[2]);
+		a3real3Cross(obj[1], obj[2], obj[0]);
+
+		a3real4SetReal3W(obj[3], jointPos, a3real_one);
+		obj[0][3] = obj[1][3] = obj[2][3] = a3real_zero;
+		a3real4x4TransformInverseIgnoreScale(objInv, obj);
+	}
+
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected, obj);
+	return;
+
+	a3real4Diff(basisVector, targetPos, jointPos);
+		// 2. side basis = known up x direction basis
+
 
 	a3real3Cross(sideBasis, up, basisVector);
 			// cancels out if lookAt target is directly above character
