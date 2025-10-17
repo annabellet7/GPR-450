@@ -378,10 +378,10 @@ void a3kinematicsUpdateLookAtIK(a3_HierarchyState const* sceneGraphState,
 	//a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
 
 	{
-		a3real3Diff(obj[2], jointPos, targetPos);
+		a3real3Diff(obj[2], targetPos, jointPos);//direction basis
 		a3real3Normalize(obj[2]);
-		a3real3CrossUnit(obj[0], up, obj[2]);
-		a3real3Cross(obj[1], obj[2], obj[0]);
+		a3real3CrossUnit(obj[0], up, obj[2]);//side basis
+		a3real3Cross(obj[1], obj[2], obj[0]);//up basis
 
 		a3real4SetReal3W(obj[3], jointPos, a3real_one);
 		obj[0][3] = obj[1][3] = obj[2][3] = a3real_zero;
