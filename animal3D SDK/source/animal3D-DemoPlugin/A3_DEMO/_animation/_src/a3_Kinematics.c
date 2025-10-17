@@ -626,21 +626,66 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3Sum(middlePos, middlePos, heightDir);
 		middlePos[3] = 0;
 
-		a3real4x4 objBase/*, objHinge, objEnd*/;
-		a3real4x4 objInv;
+		//a3real4x4 objBase/*, objHinge, objEnd*/;
+		//a3real4x4 objInv;
 		//a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
 		
 		{
-			a3real3Diff(objBase[2], middlePos, basePos);//direction basis
-			a3real3Normalize(objBase[2]);
-			a3real4SetReal3W(objBase[0], planeNormal , a3real_zero);
-			//a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
-			a3real3Cross(objBase[1], objBase[2], objBase[0]);//up basis
+			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
+			a3real3Diff(baseForwardBasis, middlePos, basePos);
+			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
+			a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
+			a3real3Normalize(baseForwardBasis);
 
-			a3real4SetReal3W(objBase[3], basePos, a3real_one);
-			objBase[0][3] = objBase[1][3] = objBase[2][3] = a3real_zero;
-			a3real4x4TransformInverseIgnoreScale(objInv, objBase);
+			
+			//if(forwardAxis == basis_xn)
+			a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
+
+			a3real4x4 orthoBasis;
+			a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+
+			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
 		}
+
+		{
+			a3kinematicsSolveForward(activeHS);
+			hingePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x;
+			hingePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.y;
+			hingePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.z;
+			hingePos[3] = 0;
+
+			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
+			a3real3Diff(baseForwardBasis, effectorPos, middlePos);
+			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
+			a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
+			a3real3Normalize(baseForwardBasis);
+
+
+			//if(forwardAxis == basis_xn)
+			a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
+
+			a3real4x4 orthoBasis;
+			a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[3], hingePos, a3real_one);
+
+			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, orthoBasis);
+		}
+		//{
+		//	a3real3Diff(objBase[2], middlePos, basePos);//direction basis
+		//	a3real3Normalize(objBase[2]);
+		//	a3real4SetReal3W(objBase[0], planeNormal , a3real_zero);
+		//	//a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
+		//	a3real3Cross(objBase[1], objBase[2], objBase[0]);//up basis
+
+		//	a3real4SetReal3W(objBase[3], basePos, a3real_one);
+		//	objBase[0][3] = objBase[1][3] = objBase[2][3] = a3real_zero;
+		//	a3real4x4TransformInverseIgnoreScale(objInv, objBase);
+		//}
 		//{
 		//	a3real3Diff(objHinge[2], effectorPos, middlePos);//direction basis
 		//	a3real3Normalize(objHinge[2]);
@@ -662,7 +707,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		//	a3real4x4TransformInverseIgnoreScale(objInv, objEnd);
 		//}
 
-		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, objBase);
+		//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, objBase);
 		/*a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, objHinge);
 		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, objEnd);*/
 		//a3real3Proj();
