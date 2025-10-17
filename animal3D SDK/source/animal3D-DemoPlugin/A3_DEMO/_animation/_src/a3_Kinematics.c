@@ -465,7 +465,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	
 	// MAIN STEP:
 		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
-		a3real4 hingeForwardBasis, endForwardBasis, baseForwardBasis;
+		a3real4 hingeForwardBasis, endForwardBasis, baseToEndForwardBasis, baseToPoleForwardBasis;
 		a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
 		a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
 		a3real4 hingePos, endPos, basePos, effectorPos, constraintPos;
@@ -505,22 +505,36 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		// *if the target is too far away, you can just calculate the position between the base and the target
 		a3real armLength = a3real4Distance(basePos, endPos);
 		a3real effectorDist = a3real4Distance(basePos, effectorPos);
-		a3real4Diff(baseForwardBasis, effectorPos, basePos);
-		a3real3Cross(baseSideBasis, up, baseForwardBasis);
-		a3real3Cross(baseUpBasis, baseForwardBasis, baseSideBasis);
-
-
 
 		if (effectorDist > armLength)
 		{
-
+			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
+										hierarchyObjIndex_affected_base, basis_hierarchyObj, basis_affected_end);
+			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
+										hierarchyObjIndex_affected_hinge, basis_hierarchyObj, basis_affected_hinge);
+			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
+										hierarchyObjIndex_affected_end, basis_hierarchyObj, basis_affected_end);
+			return;
 		}
 
 		// 1. base joint to end effector vector (and distance)
+		a3real4Diff(baseToEndForwardBasis, effectorPos, basePos);
+
 		// 2. base joint to pole vector constraint
+		a3real4Diff(baseToPoleForwardBasis, constraintPos, basePos);
+
 		// 3. plane normal = (base to pole) x (base to end)
+		a3real3 planeNormal;
+		a3real3CrossUnit(planeNormal, baseToPoleForwardBasis, baseToEndForwardBasis);
+
 		// 4. geometric (heron's formula) or algebraic (law of cosines)
 		// -> solves elbow position
+		a3real3 heightVector;
+
+		a3real3CrossUnit(heightVector, baseToEndForwardBasis, planeNormal);
+		
+		//a3real3Proj();
+
 		// 5. "look at" solves shoulder and elbow rotations
 
 	// LAST STEP:
