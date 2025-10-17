@@ -468,7 +468,9 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real4 hingeForwardBasis, endForwardBasis, baseForwardBasis;
 		a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
 		a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
-		a3real4 hingePos, endPos, basePos, effectorPos;
+		a3real4 hingePos, endPos, basePos, effectorPos, constraintPos;
+		a3real4 up;
+		a3real4Set(up, 0, 1, 0, 0);
 		
 		// -> end position*
 		endPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.x;
@@ -489,18 +491,31 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		basePos[3] = 0;
 
 		// -> effector position*
-		effectorPos[0] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x;
-		effectorPos[1] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.y;
-		effectorPos[2] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.z;
+		effectorPos[0] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x;
+		effectorPos[1] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.y;
+		effectorPos[2] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.z;
 		effectorPos[3] = 0;
+
+		// -> constraint position*
+		constraintPos[0] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_constraint].transformMat.v3.x;
+		constraintPos[1] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_constraint].transformMat.v3.y;
+		constraintPos[2] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_constraint].transformMat.v3.z;
+		constraintPos[3] = 0;
 		
 		// *if the target is too far away, you can just calculate the position between the base and the target
 		a3real armLength = a3real4Distance(basePos, endPos);
 		a3real effectorDist = a3real4Distance(basePos, effectorPos);
+		a3real4Diff(baseForwardBasis, effectorPos, basePos);
+		a3real3Cross(baseSideBasis, up, baseForwardBasis);
+		a3real3Cross(baseUpBasis, baseForwardBasis, baseSideBasis);
+
+
+
 		if (effectorDist > armLength)
 		{
 
 		}
+
 		// 1. base joint to end effector vector (and distance)
 		// 2. base joint to pole vector constraint
 		// 3. plane normal = (base to pole) x (base to end)
