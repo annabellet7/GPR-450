@@ -563,6 +563,12 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 			}
 
 			{
+				a3kinematicsSolveForward(activeHS);
+				hingePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x;
+				hingePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.y;
+				hingePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.z;
+				hingePos[3] = 0;
+
 				a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
 				a3real3Diff(baseForwardBasis, effectorPos, hingePos);
 				a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
@@ -575,9 +581,9 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 				a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
-				a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+				a3real4SetReal3W(orthoBasis[3], hingePos, a3real_one);
 
-				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
+				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, orthoBasis);
 			}
 
 			/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
