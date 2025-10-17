@@ -465,13 +465,42 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 	
 	// MAIN STEP:
 		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
+		a3real4 hingeForwardBasis, endForwardBasis, baseForwardBasis;
+		a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
+		a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
+		a3real4 hingePos, endPos, basePos, effectorPos;
+		
 		// -> end position*
-	a3real4 hingeForwardBasis, endForwardBasis, baseForwardBasis;
-	a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
-	a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
-
+		endPos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.x;
+		endPos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.y;
+		endPos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_end].transformMat.v3.z;
+		endPos[3] = 0;
+		
 		// -> hinge position*
+		hingePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x;
+		hingePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.y;
+		hingePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.z;
+		hingePos[3] = 0;
+
+		// -> base position*
+		basePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_base].transformMat.v3.x;
+		basePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_base].transformMat.v3.y;
+		basePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_base].transformMat.v3.z;
+		basePos[3] = 0;
+
+		// -> effector position*
+		effectorPos[0] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.x;
+		effectorPos[1] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.y;
+		effectorPos[2] = activeHS->objectSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.v3.z;
+		effectorPos[3] = 0;
+		
 		// *if the target is too far away, you can just calculate the position between the base and the target
+		a3real armLength = a3real4Distance(basePos, endPos);
+		a3real effectorDist = a3real4Distance(basePos, effectorPos);
+		if (effectorDist > armLength)
+		{
+
+		}
 		// 1. base joint to end effector vector (and distance)
 		// 2. base joint to pole vector constraint
 		// 3. plane normal = (base to pole) x (base to end)
