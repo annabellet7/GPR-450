@@ -529,10 +529,26 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 
 		// 4. geometric (heron's formula) or algebraic (law of cosines)
 		// -> solves elbow position
-		a3real3 heightVector;
+		a3real3 heightDir;
+		a3real3CrossUnit(heightDir, baseToEndForwardBasis, planeNormal);
 
-		a3real3CrossUnit(heightVector, baseToEndForwardBasis, planeNormal);
-		
+		a3real baseHingeDist, hingeEndDist;
+		baseHingeDist = a3real3Distance(basePos, hingePos);
+		hingeEndDist = a3real3Distance(hingePos, endPos);
+
+		a3real s = 0.5 * (armLength + baseHingeDist + hingeEndDist);
+		a3real A = a3sqrtf(s * (s - armLength) * (s - baseHingeDist) * (s - hingeEndDist));
+		a3real H = (2 * A) / armLength;
+
+		a3real D = a3sqrtf(baseHingeDist * baseHingeDist - H * H);
+		a3real3 d = *baseToEndForwardBasis;
+		a3real3Normalize(d);
+		a3real3ProductS(d, d, D);
+		a3real3ProductS(heightDir, heightDir, H);
+		a3real3 middlePos;
+		a3real3Sum(middlePos, basePos, d); 
+		a3real3Sum(middlePos, middlePos, heightDir);
+
 		//a3real3Proj();
 
 		// 5. "look at" solves shoulder and elbow rotations
