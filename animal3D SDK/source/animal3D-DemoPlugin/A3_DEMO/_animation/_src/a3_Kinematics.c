@@ -399,10 +399,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 //****TO-DO-ANIM-PROJECT-3: IMPLEMENT ME
 //-----------------------------------------------------------------------------
 
-	// FIRST STEP:
-		// transform everything into the space of the skeleton/hierarchy (inverse function)
-		// -> wrist/ankle effector
-		// -> pole vector constraint
+	//trasform effector nad constraint into hierachy space
 	a3real4x4Product(sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.m,
 		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
 		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.m);
@@ -411,14 +408,11 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
 		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_constraint].transformMat.m);
 	
-	// MAIN STEP:
-		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
-		a3real4 /*hingeForwardBasis, *//*endForwardBasis,*/ baseToEndForwardBasis, baseToPoleForwardBasis;
-		//a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
-		//a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
+		a3real4 baseToEndForwardBasis, baseToPoleForwardBasis;
 		a3real4 hingePos, endPos, basePos, effectorPos, constraintPos;
 		a3real4 up;
 		
+		//find up vector
 		a3_BasisAxis upAxis, forwardAxis;
 		a3basisExtract(&forwardAxis, &upAxis, basis_affected_base);
 		switch (upAxis)
@@ -479,67 +473,69 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		constraintPos[2] = sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_constraint].transformMat.v3.z;
 		constraintPos[3] = 0;
 		
-		// *if the target is too far away, you can just calculate the position between the base and the target
 		a3real baseHingeDist, hingeEndDist;
-		baseHingeDist = a3real3Distance(basePos, hingePos);
-		hingeEndDist = a3real3Distance(hingePos, endPos);
+		baseHingeDist = a3real3Distance(basePos, hingePos); //length of upper arm
+		hingeEndDist = a3real3Distance(hingePos, endPos); //length of forearm
 		a3real armLength = baseHingeDist + hingeEndDist;
 		a3real effectorDist = a3real4Distance(basePos, effectorPos);
 
+		//straight arm if effector is further than arm length
 		if (effectorDist > armLength)
 		{
-			a3real4Set(up, 0, 1, 0, 0);
-			//basis of base
-			//wrist is armlength in direction of basis
-			//elbow is baseHingeDist in direction of basis
+			//solve base ik
 			{
+				//get bases
 				a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
 				a3real3Diff(baseForwardBasis, effectorPos, basePos);
 				a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
 				a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
 				a3real3Normalize(baseForwardBasis);
 
+				//invert forward basis
 				a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
 
+				//build ortho basis
 				a3real4x4 orthoBasis;
 				a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
 
+				//resolve base
 				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
 			}
 
+			//solve hinge ik
 			{
-				a3kinematicsSolveForward(activeHS);
+				//set new hinge position
+				a3kinematicsSolveForwardSingle(activeHS, hierarchyObjIndex_affected_hinge, activeHS->hierarchy->nodes[hierarchyObjIndex_affected_hinge].parentIndex);
 				hingePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x;
 				hingePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.y;
 				hingePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.z;
 				hingePos[3] = 0;
 
+				//get bases
 				a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
 				a3real3Diff(baseForwardBasis, effectorPos, hingePos);
 				a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
 				a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
 				a3real3Normalize(baseForwardBasis);
 
+				//invert forward basis
 				a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
 
+				//build ortho basis
 				a3real4x4 orthoBasis;
 				a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
 				a3real4SetReal3W(orthoBasis[3], hingePos, a3real_one);
 
+				//resolve hinge
 				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, orthoBasis);
 			}
 
-			/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
-										hierarchyObjIndex_affected_base, basis_hierarchyObj, basis_affected_end);
-			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
-										hierarchyObjIndex_affected_hinge, basis_hierarchyObj, basis_affected_hinge);
-			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
-										hierarchyObjIndex_affected_end, basis_hierarchyObj, basis_affected_end);*/
+			//exit if this condition
 			return;
 		}
 
@@ -553,7 +549,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3 planeNormal;
 		a3real3CrossUnit(planeNormal, baseToPoleForwardBasis, baseToEndForwardBasis);
 
-		// 4. geometric (heron's formula) or algebraic (law of cosines)
+		// 4. geometric (heron's formula)
 		// -> solves elbow position
 		a3real3 heightDir;
 		a3real3CrossUnit(heightDir, baseToEndForwardBasis, planeNormal);
@@ -569,12 +565,13 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3Normalize(d);
 		a3real3ProductS(d, d, D);
 		a3real3ProductS(heightDir, heightDir, H);
-		a3real4 middlePos;
+		a3real4 middlePos; //solved new hinge position
 		a3real3Sum(middlePos, basePos, d); 
 		a3real3Sum(middlePos, middlePos, heightDir);
 		middlePos[3] = 0;
 
 		{
+			//get basis vectors
 			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
 			a3real3Diff(baseForwardBasis, middlePos, basePos);
 			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
@@ -582,25 +579,29 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 			a3real3Normalize(baseForwardBasis);
 
 
-			//if(forwardAxis == basis_xn)
+			//invert forward vector
 			a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
 
+			//build ortho basis
 			a3real4x4 orthoBasis;
 			a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
 
+			//resolve base
 			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
 		}
 
 		{
-			a3kinematicsSolveForward(activeHS);
+			//set new hinge postion
+			a3kinematicsSolveForwardSingle(activeHS, hierarchyObjIndex_affected_hinge, activeHS->hierarchy->nodes[hierarchyObjIndex_affected_hinge].parentIndex);
 			hingePos[0] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.x;
 			hingePos[1] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.y;
 			hingePos[2] = activeHS->objectSpace->hpose_base[hierarchyObjIndex_affected_hinge].transformMat.v3.z;
 			hingePos[3] = 0;
 
+			//get basis vectors
 			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
 			a3real3Diff(baseForwardBasis, effectorPos, middlePos);
 			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
@@ -608,47 +609,19 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 			a3real3Normalize(baseForwardBasis);
 
 
-			//if(forwardAxis == basis_xn)
+			//invert forward vector
 			a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
 
+			//create ortho basis
 			a3real4x4 orthoBasis;
 			a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
 			a3real4SetReal3W(orthoBasis[3], hingePos, a3real_one);
 
+			//resolve hinge
 			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, orthoBasis);
 		}
-		//{
-		//	a3real3Diff(objBase[2], middlePos, basePos);//direction basis
-		//	a3real3Normalize(objBase[2]);
-		//	a3real4SetReal3W(objBase[0], planeNormal , a3real_zero);
-		//	//a3real3CrossUnit(objBase[0], up, objBase[2]);//side basis
-		//	a3real3Cross(objBase[1], objBase[2], objBase[0]);//up basis
-
-		//	a3real4SetReal3W(objBase[3], basePos, a3real_one);
-		//	objBase[0][3] = objBase[1][3] = objBase[2][3] = a3real_zero;
-		//	a3real4x4TransformInverseIgnoreScale(objInv, objBase);
-		//}
-
-		//a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, objBase);
-		/*a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, objHinge);
-		a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, objEnd);*/
-		//a3real3Proj();
-
-		// 5. "look at" solves shoulder and elbow rotations
-
-	// LAST STEP:
-		// resolve every affected joint
-		//  -> work from root to leaf
-		//a3kinematicResolvePostIK (closest to root)
-		//a3kinematicResolvePostIK
-		//a3kinematicResolvePostIK (closest to end)
-	/*a3real4x4 obj;
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, obj);
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, obj);
-	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, obj);*/
-
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
