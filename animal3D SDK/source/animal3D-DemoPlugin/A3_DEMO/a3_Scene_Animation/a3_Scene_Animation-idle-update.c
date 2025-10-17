@@ -54,7 +54,7 @@ void a3demo_updateHierarchyGraphics(
 
 void a3SingleJointIK(a3_Scene_Animation* scene,	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[]);
 void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
-					char endName[], char hingeName[], char rootName[], a3_SceneObject const* effector, const* constraint);
+					char endName[], char hingeName[], char rootName[], a3_SceneObject const* effector, a3_SceneObject const* constraint);
 
 //-----------------------------------------------------------------------------
 // UPDATE
