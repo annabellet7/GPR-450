@@ -473,7 +473,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		
 		a3_BasisAxis upAxis, forwardAxis;
 		a3basisExtract(&forwardAxis, &upAxis, basis_affected_base);
-		switch (forwardAxis)
+		switch (upAxis)
 		{
 		case basis_xp:
 			a3real4Set(up, 1, 0, 0, 0);
@@ -532,17 +532,36 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		constraintPos[3] = 0;
 		
 		// *if the target is too far away, you can just calculate the position between the base and the target
-		a3real armLength = a3real4Distance(basePos, endPos);
+		a3real baseHingeDist, hingeEndDist;
+		baseHingeDist = a3real3Distance(basePos, hingePos);
+		hingeEndDist = a3real3Distance(hingePos, endPos);
+		a3real armLength = baseHingeDist + hingeEndDist;
 		a3real effectorDist = a3real4Distance(basePos, effectorPos);
 
 		if (effectorDist > armLength)
 		{
-			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
+			//basis of base
+			//wrist is armlength in direction of basis
+			//elbow is baseHingeDist in direction of basis
+			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
+			a3real3Diff(baseForwardBasis, effectorPos, basePos);
+			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
+			a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
+			a3real3Normalize(baseForwardBasis);
+
+			a3real4x4 orthoBasis;
+			a3real4SetReal3W(orthoBasis[2], baseForwardBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[0], baseSideBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
+			a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+
+			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
+			/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
 										hierarchyObjIndex_affected_base, basis_hierarchyObj, basis_affected_end);
 			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
 										hierarchyObjIndex_affected_hinge, basis_hierarchyObj, basis_affected_hinge);
 			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
-										hierarchyObjIndex_affected_end, basis_hierarchyObj, basis_affected_end);
+										hierarchyObjIndex_affected_end, basis_hierarchyObj, basis_affected_end);*/
 			return;
 		}
 
@@ -561,9 +580,6 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3 heightDir;
 		a3real3CrossUnit(heightDir, baseToEndForwardBasis, planeNormal);
 
-		a3real baseHingeDist, hingeEndDist;
-		baseHingeDist = a3real3Distance(basePos, hingePos);
-		hingeEndDist = a3real3Distance(hingePos, endPos);
 		a3real s = a3real_onehalf * (armLength + baseHingeDist + hingeEndDist);
 		a3real A = a3sqrtf(s * (s - armLength) * (s - baseHingeDist) * (s - hingeEndDist));
 		a3real H = (2 * A) / armLength;
