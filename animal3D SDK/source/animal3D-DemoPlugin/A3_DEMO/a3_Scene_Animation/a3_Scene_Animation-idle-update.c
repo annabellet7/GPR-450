@@ -52,7 +52,8 @@ void a3demo_updateHierarchyGraphics(
 	a3mat4* transform_mvp_joints, a3mat4* transform_mvp_bones, a3mat4* transform_t_skin, a3dualquat* transform_dq_skin, a3ui32 const max_transforms,
 	a3mat4 const mvp_obj, a3_HierarchyState const* activeHS);
 
-void a3SingleJointIK(a3_Scene_Animation* scene,	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup, char jointName[]);
+void a3SingleJointIK(a3_Scene_Animation* scene,	a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, 
+					a3_HierarchyPoseGroup const* poseGroup, char jointName[], a3_SceneObject const* effector);
 void a3PolyJointIK(a3_Scene_Animation* scene, a3_HierarchyState* activeHS, a3_HierarchyState const* baseHS, a3_HierarchyPoseGroup const* poseGroup,
 					char endName[], char hingeName[], char rootName[], a3_SceneObject const* effector, a3_SceneObject const* constraint);
 
@@ -66,7 +67,7 @@ void a3animation_update_applyEffectors(a3_Scene_Animation* scene,
 		activeHS->hierarchy == poseGroup->hierarchy)
 	{
 		//author: annabelle
-		a3SingleJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:Neck");
+		a3SingleJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:Neck", scene->obj_skeleton_neckLookat_ctrl);
 		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:RightHand", "mixamorig:RightForeArm", "mixamorig:RightArm",
 			scene->obj_skeleton_wristEffector_r_ctrl, scene->obj_skeleton_wristConstraint_r_ctrl);
 		a3PolyJointIK(scene, activeHS, baseHS, poseGroup, "mixamorig:LeftHand", "mixamorig:LeftForeArm", "mixamorig:LeftArm",
