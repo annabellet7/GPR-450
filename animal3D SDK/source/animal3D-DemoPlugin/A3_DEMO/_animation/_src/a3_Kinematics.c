@@ -455,10 +455,21 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		// transform everything into the space of the skeleton/hierarchy (inverse function)
 		// -> wrist/ankle effector
 		// -> pole vector constraint
+	a3real4x4Product(sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_effector_end].transformMat.m,
+		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
+		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_effector_end].transformMat.m);
+
+	a3real4x4Product(sceneGraphState->objectSpaceInv->hpose_base[sceneGraphIndex_constraint].transformMat.m,
+		sceneGraphState->localSpaceInv->hpose_base[sceneGraphIndex_hierarchyObj].transformMat.m,
+		sceneGraphState->localSpace->hpose_base[sceneGraphIndex_constraint].transformMat.m);
 	
 	// MAIN STEP:
 		// solve jpint-to-object for end, hinge, base (wrist, elbow, shoulder; ankle, knee, hip)
 		// -> end position*
+	a3real4 hingeForwardBasis, endForwardBasis, baseForwardBasis;
+	a3real4 hingeSideBasis, endSideBasis, baseSideBasis;
+	a3real4 hingeUpBasis, endUpBasis, baseUpBasis;
+
 		// -> hinge position*
 		// *if the target is too far away, you can just calculate the position between the base and the target
 		// 1. base joint to end effector vector (and distance)
@@ -474,6 +485,11 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		//a3kinematicResolvePostIK (closest to root)
 		//a3kinematicResolvePostIK
 		//a3kinematicResolvePostIK (closest to end)
+	a3real4x4 obj;
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, obj);
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_hinge, obj);
+	a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_end, obj);
+
 
 //-----------------------------------------------------------------------------
 //****END-TO-DO-PROJECT-3
