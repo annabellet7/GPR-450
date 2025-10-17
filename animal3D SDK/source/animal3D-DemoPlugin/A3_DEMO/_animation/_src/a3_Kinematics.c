@@ -626,7 +626,7 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 		a3real3Sum(middlePos, middlePos, heightDir);
 		middlePos[3] = 0;
 
-		a3real4x4 objBase, objHinge, objEnd;
+		a3real4x4 objBase/*, objHinge, objEnd*/;
 		a3real4x4 objInv;
 		//a3real4x4MakeLookAt(obj, objInv, jointPos, targetPos, up);
 		
