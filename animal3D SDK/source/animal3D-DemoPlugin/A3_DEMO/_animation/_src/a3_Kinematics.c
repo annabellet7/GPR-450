@@ -540,22 +540,46 @@ void a3kinematicsUpdateLimbIK(a3_HierarchyState const* sceneGraphState,
 
 		if (effectorDist > armLength)
 		{
+			a3real4Set(up, 0, 1, 0, 0);
 			//basis of base
 			//wrist is armlength in direction of basis
 			//elbow is baseHingeDist in direction of basis
-			a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
-			a3real3Diff(baseForwardBasis, effectorPos, basePos);
-			a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
-			a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
-			a3real3Normalize(baseForwardBasis);
+			{
+				a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
+				a3real3Diff(baseForwardBasis, effectorPos, basePos);
+				a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
+				a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
+				a3real3Normalize(baseForwardBasis);
 
-			a3real4x4 orthoBasis;
-			a3real4SetReal3W(orthoBasis[2], baseForwardBasis, a3real_zero);
-			a3real4SetReal3W(orthoBasis[0], baseSideBasis, a3real_zero);
-			a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
-			a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+				a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
 
-			a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
+				a3real4x4 orthoBasis;
+				a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+
+				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
+			}
+
+			{
+				a3real3 baseForwardBasis, baseSideBasis, baseUpBasis;
+				a3real3Diff(baseForwardBasis, effectorPos, hingePos);
+				a3real3CrossUnit(baseSideBasis, up, baseForwardBasis);
+				a3real3CrossUnit(baseUpBasis, baseForwardBasis, baseSideBasis);
+				a3real3Normalize(baseForwardBasis);
+
+				a3real3ProductS(baseForwardBasis, baseForwardBasis, -1);
+
+				a3real4x4 orthoBasis;
+				a3real4SetReal3W(orthoBasis[2], baseSideBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[0], baseForwardBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[1], baseUpBasis, a3real_zero);
+				a3real4SetReal3W(orthoBasis[3], basePos, a3real_one);
+
+				a3kinematicsResolvePostIK(activeHS, baseHS, poseGroup, hierarchyObjIndex_affected_base, orthoBasis);
+			}
+
 			/*a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
 										hierarchyObjIndex_affected_base, basis_hierarchyObj, basis_affected_end);
 			a3kinematicsUpdateLookAtIK(sceneGraphState, activeHS, baseHS, poseGroup, sceneGraphIndex_hierarchyObj, sceneGraphIndex_effector_end,
