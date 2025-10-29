@@ -74,11 +74,13 @@ a3real4r a3blendOpRET4(a3real4 v_out)
 
 a3real4r a3blendOpZERO4(a3real4 v_out)
 {
+	a3real4Set(v_out, 0, 0, 0, 0);
 	return v_out;
 }
 
 a3real4r a3blendOpONE4(a3real4 v_out)
 {
+	a3real4Set(v_out, 1, 1, 1, 1);
 	return v_out;
 }
 
@@ -89,11 +91,13 @@ a3real4r a3blendOpID4(a3real4 v_out)
 
 a3real4r a3blendOpCOPY4(a3real4 v_out, a3real4 const v)
 {
+	a3real4SetReal4(v_out, v);
 	return v_out;
 }
 
 a3real4r a3blendOpNEGATE4(a3real4 v_out, a3real4 const v)
 {
+	a3real4GetNegative(v_out, v);
 	return v_out;
 }
 
@@ -109,21 +113,25 @@ a3real4r a3blendOpCONJQ4(a3real4 v_out, a3real4 const v)
 
 a3real4r a3blendOpADD4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real4Sum(v_out, v0, v1);
 	return v_out;
 }
 
 a3real4r a3blendOpSUB4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real4Diff(v_out, v0, v1);
 	return v_out;
 }
 
 a3real4r a3blendOpMUL4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real4ProductComp(v_out, v0, v1);
 	return v_out;
 }
 
 a3real4r a3blendOpDIV4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real4QuotientComp(v_out, v0, v1);
 	return v_out;
 }
 
@@ -139,31 +147,55 @@ a3real4r a3blendOpMULCONJQ4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 
 a3real4r a3blendOpSCALE4(a3real4 v_out, a3real4 const v, a3real const u)
 {
+	a3real4ProductS(v_out, v, u);
 	return v_out;
 }
 
 a3real4r a3blendOpPOW4(a3real4 v_out, a3real4 const v, a3real const u)
 {
+	a3real4SetReal4(v_out, v);
+	if (u == 1)
+	{
+		return v_out;
+	}
+	else
+	{
+		for (a3real i = 1; i < u; i++)
+		{
+			a3real4ProductComp(v_out, v_out, v);
+		}
+	}
 	return v_out;
 }
 
 a3real4r a3blendOpNEAR4(a3real4 v_out, a3real4 const v0, a3real4 const v1, a3real const u)
 {
+	if (u < 0.5)
+	{
+		a3real4SetReal4(v_out, v0);
+	}
+	else if (u >= 0.5)
+	{
+		a3real4SetReal4(v_out, v1);
+	}
 	return v_out;
 }
 
 a3real4r a3blendOpLERP4(a3real4 v_out, a3real4 const v0, a3real4 const v1, a3real const u)
 {
+	a3real4Lerp(v_out, v0, v1, u);
 	return v_out;
 }
 
 a3real4r a3blendOpNLERP4(a3real4 v_out, a3real4 const v0, a3real4 const v1, a3real const u)
 {
+	a3real4NLerp(v_out, v0, v1, u);
 	return v_out;
 }
 
 a3real4r a3blendOpSLERP4(a3real4 v_out, a3real4 const v0, a3real4 const v1, a3real const u)
 {
+	a3real4Slerp(v_out, v0, v1, u);
 	return v_out;
 }
 
@@ -241,21 +273,25 @@ a3real4r a3blendOpRET4X4(a3real4 m_out)
 
 a3real4r a3blendOpID4X4(a3real4 m_out)
 {
+	a3real4x4SetIdentity(m_out);
 	return m_out;
 }
 
 a3real4r a3blendOpCOPY4X4(a3real4 m_out, a3real4 const m)
 {
+	a3real4x4SetReal4x4(m_out, m);
 	return m_out;
 }
 
 a3real4r a3blendOpINVR4X4(a3real4 m_out, a3real4 const m)
 {
+	a3real4x4GetInverse(m_out, m);
 	return m_out;
 }
 
 a3real4r a3blendOpMULM4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1)
 {
+	a3real4x4Product(m_out, m0, m1);
 	return m_out;
 }
 
@@ -266,11 +302,20 @@ a3real4r a3blendOpMULINVR4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1)
 
 a3real4r a3blendOpSCALE4X4(a3real4 m_out, a3real4 const m, a3real const u)
 {
+	a3real4x4ProductS(m_out, m, u);
 	return m_out;
 }
 
 a3real4r a3blendOpNEAR4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1, a3real const u)
 {
+	if (u < 0.5)
+	{
+		a3real4x4SetReal4x4(m_out, m0);
+	}
+	else if (u >= 0.5)
+	{
+		a3real4x4SetReal4x4(m_out, m1);
+	}
 	return m_out;
 }
 
