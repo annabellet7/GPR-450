@@ -86,6 +86,7 @@ a3real4r a3blendOpONE4(a3real4 v_out)
 
 a3real4r a3blendOpID4(a3real4 v_out)
 {
+	a3real4Set(v_out, 1, 0, 0, 0); //idk, guessing
 	return v_out;
 }
 
@@ -103,11 +104,16 @@ a3real4r a3blendOpNEGATE4(a3real4 v_out, a3real4 const v)
 
 a3real4r a3blendOpRECIP4(a3real4 v_out, a3real4 const v)
 {
+	v_out[0] = 1 / v[0];
+	v_out[1] = 1 / v[1];
+	v_out[2] = 1 / v[2];
+	v_out[3] = 1 / v[3];
 	return v_out;
 }
 
 a3real4r a3blendOpCONJQ4(a3real4 v_out, a3real4 const v)
 {
+	a3real4Set(v_out, v[0], -v[1], -v[2], -v[3]);
 	return v_out;
 }
 
@@ -137,11 +143,24 @@ a3real4r a3blendOpDIV4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 
 a3real4r a3blendOpMULQ4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real3 vi0, vi1, crossV;
+	a3real d;
+	a3real3Set(vi0, v0[1], v0[2], v0[3]);
+	a3real3Set(vi1, v1[1], v1[2], v1[3]);
+	d = a3real3Dot(vi0, vi1);
+	a3real3Cross(crossV, vi0, vi1);
+	v_out[0] = (v0[0] * v1[0]) - d;
+	v_out[1] = v0[0] * v1[1] + v1[0] * v0[1] + crossV[0];
+	v_out[2] = v0[0] * v1[2] + v1[0] * v0[2] + crossV[1];
+	v_out[3] = v0[0] * v1[3] + v1[0] * v0[3] + crossV[2];
 	return v_out;
 }
 
 a3real4r a3blendOpMULCONJQ4(a3real4 v_out, a3real4 const v0, a3real4 const v1)
 {
+	a3real4 conjV1;
+	a3blendOpCONJQ4(conjV1, v1);
+	a3blendOpMULQ4(v_out, v0, conjV1);
 	return v_out;
 }
 
