@@ -292,25 +292,25 @@ a3real4r a3blendOpRET4X4(a3real4 m_out)
 
 a3real4r a3blendOpID4X4(a3real4 m_out)
 {
-	a3real4x4SetIdentity(m_out);
+	//a3real4x4SetIdentity(m_out);
 	return m_out;
 }
 
 a3real4r a3blendOpCOPY4X4(a3real4 m_out, a3real4 const m)
 {
-	a3real4x4SetReal4x4(m_out, m);
+	//a3real4x4SetReal4x4(m_out, m);
 	return m_out;
 }
 
 a3real4r a3blendOpINVR4X4(a3real4 m_out, a3real4 const m)
 {
-	a3real4x4GetInverse(m_out, m);
+	//a3real4x4GetInverse(m_out, m);
 	return m_out;
 }
 
 a3real4r a3blendOpMULM4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1)
 {
-	a3real4x4Product(m_out, m0, m1);
+	//a3real4x4Product(m_out, m0, m1);
 	return m_out;
 }
 
@@ -321,20 +321,20 @@ a3real4r a3blendOpMULINVR4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1)
 
 a3real4r a3blendOpSCALE4X4(a3real4 m_out, a3real4 const m, a3real const u)
 {
-	a3real4x4ProductS(m_out, m, u);
+	//a3real4x4ProductS(m_out, m, u);
 	return m_out;
 }
 
 a3real4r a3blendOpNEAR4X4(a3real4 m_out, a3real4 const m0, a3real4 const m1, a3real const u)
 {
-	if (u < 0.5)
+	/*if (u < 0.5)
 	{
 		a3real4x4SetReal4x4(m_out, m0);
 	}
 	else if (u >= 0.5)
 	{
 		a3real4x4SetReal4x4(m_out, m1);
-	}
+	}*/
 	return m_out;
 }
 
