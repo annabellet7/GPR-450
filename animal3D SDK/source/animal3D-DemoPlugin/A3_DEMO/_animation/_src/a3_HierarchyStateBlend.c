@@ -64,6 +64,11 @@ a3ret a3spatialPoseBlendTreeConfigureNode(a3_SpatialPoseBlendTree const* blendTr
 {
 	if (!blendTree)
 		return -1;
+	
+	blendTree->nodes[nodeIndex].blendOpSet->exec = 
+	//blendTree->nodes[nodeIndex].pose_ctrl = malloc(sizeof(*blendTree->nodes[nodeIndex].pose_ctrl) * blendTree->nodes[nodeIndex].vCount);
+	//blendTree->nodes[nodeIndex].u = ;
+
 	return 0;
 }
 
@@ -72,6 +77,12 @@ a3ret a3spatialPoseBlendTreeExecute(a3_SpatialPoseBlendTree const* blendTree)
 {
 	if (!blendTree)
 		return -1;
+	
+	for (int i = blendTree->blendTreeDescriptor->numNodes - 1; i >= 0; i--)
+	{
+		//blendTree->nodes[i].blendOpSet->exec(blendTree->nodes[i].pose_out, blendTree->nodes[i].pose_ctrl, );
+	}
+	
 	return 0;
 }
 
