@@ -51,6 +51,11 @@ a3ret a3spatialPoseBlendTreeRelease(a3_SpatialPoseBlendTree* blendTree)
 {
 	if (!blendTree)
 		return -1;
+	if(blendTree->nodes)
+		free(blendTree->nodes);//might have to iterate we do not know c
+	
+	free(blendTree);
+
 	return 0;
 }
 
