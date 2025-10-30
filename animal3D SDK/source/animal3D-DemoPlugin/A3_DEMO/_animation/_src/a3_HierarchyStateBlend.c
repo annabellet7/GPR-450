@@ -23,6 +23,7 @@
 */
 
 #include "../a3_HierarchyStateBlend.h"
+#include "stdlib.h"
 
 
 //-----------------------------------------------------------------------------
@@ -35,8 +36,13 @@
 // create blend tree
 a3ret a3spatialPoseBlendTreeCreate(a3_SpatialPoseBlendTree* blendTree, a3_Hierarchy const* blendTreeDescriptor)
 {
+	blendTree = malloc(sizeof(a3_SpatialPoseBlendTree));
+	if(blendTree)
+		blendTree->nodes = malloc(sizeof(a3_SpatialPoseBlendNode) * blendTreeDescriptor->numNodes);
+
 	if (!blendTree || !blendTreeDescriptor)
 		return -1;
+
 	return 0;
 }
 

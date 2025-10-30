@@ -707,6 +707,11 @@ void a3animation_init_animation(a3_DemoState const* demoState, a3_Scene_Animatio
 	a3hierarchySetNode(scene->blendTree, 3, 1, "blendTree_idle_m");
 	a3hierarchySetNode(scene->blendTree, 4, 0, "blendTree_idle_p");
 	
+	a3_SpatialPoseBlendTree poseBlendTree;
+
+	a3spatialPoseBlendTreeCreate(&poseBlendTree, scene->blendTree);
+	//a3spatialPoseBlendTreeExecute();
+
 	// blend tree states
 	for (p = 0, j = scene->blendTree->numNodes; p < j; ++p)
 	{
