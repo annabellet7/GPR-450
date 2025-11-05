@@ -64,8 +64,7 @@ a3ret a3spatialPoseBlendTreeConfigureNode(a3_SpatialPoseBlendTree const* blendTr
 {
 	if (!blendTree)
 		return -1;
-	
-	blendTree->nodes[nodeIndex].blendOpSet->exec = 
+
 	//blendTree->nodes[nodeIndex].pose_ctrl = malloc(sizeof(*blendTree->nodes[nodeIndex].pose_ctrl) * blendTree->nodes[nodeIndex].vCount);
 	//blendTree->nodes[nodeIndex].u = ;
 
